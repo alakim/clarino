@@ -282,6 +282,11 @@ new JSUnit.Test("format function", "Formatting").run = function(){ with(Clarino)
 	this.assert(format("abc{0}def{1}xxx{2}yyy", 1, "abc", true), "abc1defabcxxxtrueyyy");
 }}
 
+new JSUnit.Test('Escape function', 'Formatting').run = function(){with(Clarino){
+	this.assert(escape('<p>xxx</p>'), '&lt;p&gt;xxx&lt;/p&gt;');
+	this.assert(escape('<p>xxx&yyy "aaa" \'b</p>'), '&lt;p&gt;xxx&amp;yyy &quot;aaa&quot; &apos;b&lt;/p&gt;');
+}}
+
 
 new JSUnit.Test("callFunction function", "Formatting").run = function(){ with(Clarino){
 	this.assert(callFunction("alert", 1), "alert(1)");

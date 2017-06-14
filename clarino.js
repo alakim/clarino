@@ -109,6 +109,14 @@ var Clarino = (function(){
 			}
 			return str;
 		},
+
+		escape: function(str){
+			return str.replace(/\&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;')
+				.replace(/\"/g, '&quot;')
+				.replace(/\'/g, '&apos;');
+		},
 		
 		style: function(){
 			function addUnits(nm, val){

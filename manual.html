@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+	<script src="tools/jquery-3.1.1.min.js"></script>
+	<script src="clarino.js"></script>
+
+	<script>
+	(function($, $H){
+		var px = $H.unit.px,
+			css = $H.cssKeywords;
+
+		var Settings = {
+			title: 'Clarino - руководство пользователя'
+		};
+
+		$H.writeStylesheet({
+			'.manual':{
+				fontFamily: 'Verdana, Arial, Sans-Serif',
+				fontSize: px(14),
+				' .code':{
+					backgroundColor: '#ccc',
+					width:px(300)
+				}
+			}
+		});
+		
+		function section(title, content){with($H){
+			return div(h2(title), content);
+		}}
+		function codesample(lines){with($H){
+			return pre({'class':'code'},
+				lines instanceof Array?apply(lines, function(ln){return escape(ln)+'\n';})
+					:escape(lines)
+			);
+		}}
+
+		function manual(){with($H){
+			return div({'class':'manual'},
+				h1(Settings.title),
+				section('Назначение', div(
+					p('Программный модуль Clarino предназначен для формирования фрагментов HTML-, XML-, и CSS-кода.')
+				)),
+				section('Подключение', div(
+					p('Для использования библиотеки Clarino достаточно подключить её к веб-странице:'),
+					codesample(['<scr'+'ipt src="clarino.js"></sc'+'ript>']),
+					p('Получение номера версии:'),
+					codesample(['Clarino.version()']),
+					p('Доступ к интерфейсу заданной версии:'),
+					codesample('Clarino.version("1.0.0")')
+				))
+			);
+		}}
+
+		$(function(){
+			$('head title').html(Settings.title);
+			$('body').html(manual());
+		});
+	})(jQuery, Clarino.version('1.0.0'));
+	</script>
+</head>
+<body></body>
+</html>
