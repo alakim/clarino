@@ -1,5 +1,7 @@
 var Clarino = (function(){
-	var Html = {
+	var Html = {},
+		Css = {};
+	var Clarino = {
 		xhtmlMode: true	
 	};
 	
@@ -30,7 +32,7 @@ var Clarino = (function(){
 		if(notEmpty && h.length==0) h = "&nbsp;";
 		
 		if(selfClosing && h.length==0)
-			return "<"+name+a.join("")+(Html.xhtmlMode? "/>":">");
+			return "<"+name+a.join("")+(Clarino.xhtmlMode? "/>":">");
 		else
 			return "<"+name+a.join("")+">"+h+"</"+name+">";
 	}
@@ -64,21 +66,7 @@ var Clarino = (function(){
 	
 	function emptyValue(v){return !v ||(typeof(v)=="string"&&v.length==0);}
 	
-	extend(Html, {
-		tag: tag,
-		
-		apply: function(coll, F, delim, hideEmpty){
-			var h = [];
-			each(coll, function(el, i){
-				if(!emptyValue(el) || !hideEmpty){
-					var v = F(el, i);
-					if(!emptyValue(v) || !hideEmpty)
-						h.push(v);
-				}
-			});
-			return h.join(delim||"");
-		},
-		
+	extend(Clarino, {
 		repeat: repeat,
 		
 		markup: markup,
@@ -116,6 +104,21 @@ var Clarino = (function(){
 				.replace(/\"/g, '&quot;')
 				.replace(/\'/g, '&apos;');
 		},
+		
+		tag: tag,
+		
+		apply: function(coll, F, delim, hideEmpty){
+			var h = [];
+			each(coll, function(el, i){
+				if(!emptyValue(el) || !hideEmpty){
+					var v = F(el, i);
+					if(!emptyValue(v) || !hideEmpty)
+						h.push(v);
+				}
+			});
+			return h.join(delim||"");
+		},
+		
 		
 		style: function(){
 			function addUnits(nm, val){
@@ -156,6 +159,8 @@ var Clarino = (function(){
 			return res;
 		}
 	});
+
+	// extend(Html, { });
 	
 	defineTags("div;a;p;span;nobr;ul;ol;li;i;table;tbody;thead;tr;input;label;textarea;pre;select;option;optgroup;h1;h2;h3;h4;h5;h6;button;form;dl;dt;dd;svg");
 	
@@ -176,7 +181,7 @@ var Clarino = (function(){
 		}
 		
 		function attrName(nm){
-			var attNm = Html.cssAttributes[nm] || nm;
+			var attNm = Css.attributes[nm] || nm;
 			return insertHyphens(attNm);
 		}
 		
@@ -203,21 +208,21 @@ var Clarino = (function(){
 		});
 	}
 
-	Html.cssRules = function(title, styles){
+	Css.rules = function(title, styles){
 		return title+'{\n'
-			+ Html.stylesheet(styles)
+			+ Css.stylesheet(styles)
 			+'\n}';
 	}
 	
-	Html.writeCssRules = function(title, styles){
+	Css.writeRules = function(title, styles){
 		document.write('<style type="text/css">\n');
-		document.write(Html.cssRules(title, styles));
+		document.write(Css.cssRules(title, styles));
 		document.write('\n</style>\n');
 	}
 
-	Html.cssAttributes = {};
+	Css.attributes = {};
 	
-	Html.stylesheet = function(css){
+	Css.stylesheet = function(css){
 		var stylesheet = [];
 		each(css, function(defs, sel){
 			writeStyle(defs, sel, stylesheet);
@@ -225,13 +230,13 @@ var Clarino = (function(){
 		return stylesheet.join("\n");
 	}
 	
-	Html.writeStylesheet = function(css){
+	Css.writeStylesheet = function(css){
 		document.write('<style type="text/css">\n');
-		document.write(Html.stylesheet(css));
+		document.write(Css.stylesheet(css));
 		document.write('\n</style>\n');
 	}
 	
-	Html.unit = function(name){
+	Css.unit = function(name){
 		function format(v){
 			if(typeof(v)==='string') return v;
 			if(v instanceof Array) return v.join(name+' ')+name;
@@ -247,19 +252,19 @@ var Clarino = (function(){
 		}
 	}
 
-	extend(Html.unit, {
-		px: Html.unit('px'),
-		pc: Html.unit('%'),
-		em: Html.unit('em')
+	extend(Css.unit, {
+		px: Css.unit('px'),
+		pc: Css.unit('%'),
+		em: Css.unit('em')
 	});
 
-	Html.symbols = function(str){
+	Clarino.symbols = function(str){
 		var res = {}, c=str.split(';');
 		for(var s,i=0; s=c[i],i<c.length; i++) res[s] = s;
 		return res;
 	};
 
-	Html.cssKeywords = Html.symbols('block;none;flex;row;column;left;right;center;hidden;pointer;bold;normal;uppercase;lowercase;absolute;relative;underline;auto;collapse;separate;dotted;inherit;inline;default;solid;');
+	Css.keywords = Clarino.symbols('block;none;flex;row;column;left;right;center;hidden;pointer;bold;normal;uppercase;lowercase;absolute;relative;underline;auto;collapse;separate;dotted;inherit;inline;default;solid;');
 	
 	function compareVersions(v1, v2){
 		if(v1==v2) return 0;
@@ -289,16 +294,18 @@ var Clarino = (function(){
 	
 	var topVersion = "1.0.0";
 	
-	if(typeof(JSUnit)=="object") Html.compareVersions = compareVersions;
+	if(typeof(JSUnit)=="object") Clarino.compareVersions = compareVersions;
 	
 	var interfaces = {};
-	interfaces[topVersion] = Html;
+	interfaces[topVersion] = Clarino;
 	
 	var intf = {
 		version: version
 	};
 	
-	extend(Html, intf);
+	extend(Clarino, intf);
+	Clarino.html = Html;
+	Clarino.css = Css;
 	
-	return Html;
+	return Clarino;
 })();

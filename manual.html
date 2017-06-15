@@ -7,13 +7,16 @@
 	<script src="clarino.js"></script>
 
 	<script>
-	(function($, $H){
-		var px = $H.unit.px,
-			pc = $H.unit.pc,
-			css = $H.cssKeywords;
+	(function($, $C){
+		//console.log($C);
+		var $H = $C.html;
+
+		var px = $C.css.unit.px,
+			pc = $C.css.unit.pc,
+			css = $C.css.keywords;
 
 		var Settings = {
-			title: $H.format('Clarino v.{0} - руководство пользователя', Clarino.version()),
+			title: $C.format('Clarino v.{0} - руководство пользователя', Clarino.version()),
 			link:{
 				color:{
 					lo:'#00a',
@@ -22,7 +25,7 @@
 			}
 		};
 
-		$H.writeStylesheet({
+		$C.css.writeStylesheet({
 			'h1,h2,h3,h4':{
 				marginBottom:px(0)
 			},
@@ -72,51 +75,52 @@
 				content
 			);
 		}}
-		function codesample(lines){with($H){
+		function codesample(lines){with($H){with($C){
 			return pre({'class':'code'},
 				lines instanceof Array?apply(lines, function(ln){return escape(ln)+'\n';})
 					:escape(lines)
 			);
-		}}
+		}}}
 
 		var errorsDetected = false,
 			errors = [];
 		function assert(val, expected){
 			if(val!=expected){
 				errorsDetected = true;
-				errors.push('Assertion failed: expected "'+$H.escape(expected)+'", but was "'+$H.escape(val)+'"');
+				errors.push('Assertion failed: expected "'+$C.escape(expected)+'", but was "'+$C.escape(val)+'"');
 			}
 		}
 
 		function test(action){with($H){
 			errors = [];
 			action();
-			return errors.length?div({'class':'error'}, apply(errors, function(e){return div(e)}))
+			return errors.length?div({'class':'error'}, $C.apply(errors, function(e){return div(e)}))
 				:div({'class':'success'}, 'test performed');
 		}}
 
 		var describedFields = {};
 
-		function referenceManual(doc, showRemaining){with($H){
+		function referenceManual(prefix, root, doc, showRemaining){with($H){with($C){
 			if(typeof(doc)=='function') doc = doc();
 			return table({border:1, cellpadding:3, cellspacing:0, width:pc(100)},
-				apply(doc, function(man, fld){
-					describedFields[fld] = true;
+				$C.apply(doc, function(man, fld){
+					describedFields[prefix+'.'+fld] = true;
 					return tr(
-						td($H[fld]?null:(errorsDetected=true,div({'class':'error'}, 'not defined')), fld),
+						td(root[fld]?null:(errorsDetected=true,div({'class':'error'}, 'not defined')), prefix, '.', fld),
 						td(man)
 					);
 				}),
-				showRemaining?apply($H, function(v, fld){
-					return describedFields[fld]?null:tr(
-						td(fld),
+				showRemaining?$C.apply(root, function(v, fld){
+					return describedFields[prefix+'.'+fld]?null:tr(
+						td(prefix, '.', fld),
 						td((errorsDetected=true,div({'class':'error'}, 'нет описания')))
 					);
 				}):null
 			);
-		}}
+		}}}
 
 		function manual(){with($H){
+			var markup = $C.markup;
 			return div({'class':'manual'},
 				h1(Settings.title),
 				div({'class':'error pnlErrorsDetected'}, 'Обнаружены ошибки'),
@@ -140,33 +144,40 @@
 					})
 				)),
 				section(2, 'Справочник', markup(
+					section(3, 'Разделы', div(
+						referenceManual('Clarino', $C, { 
+							html: markup('Содержит определения HTML-тегов'),
+							css: markup('Содержит функции для формирования CSS-таблиц')
+						})
+					)),
 					section(3, 'HTML-теги', div(
-						referenceManual(function(){
+						referenceManual('Clarino.html', $H, function(){
 							// https://www.w3schools.com/tags/
 							var tags = 'a;abbr;address;area;article;aside;audio;b;base;bdi;bdo;blockquote;body;br;button;canvas;caption;cite;code;col;colgroup;datalist;dd;del;details;dfn;dialog;div;dl;dt;em;embed;fieldset;figcaption;figure;footer;form;h1;h2;h3;h4;h5;h6;head;header;hr;html;i;iframe;img;input;ins;kbd;keygen;label;legend;li;link;main;map;mark;menu;menuitem;meta;meter;nav;nobr;noscript;object;ol;optgroup;option;output;p;param;picture;pre;progress;q;rp;rt;ruby;s;samp;script;section;select;small;source;span;strong;style;sub;summary;sup;svg;table;tbody;td;textarea;tfoot;th;thead;time;title;tr;track;u;ul;var;video;wbr'.split(';');
 							var tagDefs = {};
 							for(var t,i=0; t=tags[i],i<tags.length; i++){
-								tagDefs[t] = escape('Формирует HTML-тег <'+t+'>');
+								tagDefs[t] = $C.escape('Формирует HTML-тег <'+t+'>');
 							}
 							return tagDefs;
 						})
 					)),
 					section(3, 'Управление', div(
-						referenceManual({
+						referenceManual('Clarino', $C, {
 							apply: markup('Применяет шаблон к элементам массива или полям объекта'),
 							repeat: markup('Применяет шаблон указанное число раз'),
 							markup: markup('Контейнер для произвольного набора тегов, не формирующий для них родительский тег.')
 						})
 					)),
 					section(3, 'Настройка', div(
-						referenceManual({
+						referenceManual('Clarino', $C, {
 							version: markup('Возвращает текущую версию модуля или интерфейс для заданной версии'),
 							xhtmlMode: markup('Включает режим форматирования XHTML')
 						})
 					)),
 					section(3, 'Форматирование', div(
-						referenceManual({
+						referenceManual('Clarino', $C, {
 							tag: markup('Создает фрагмент разметки с произвольным тегом'),
+							style: markup('Форматирует строку стилей в атрибутах HTML-элемента'),
 							format: markup('Форматирование строки со вставкой значений'),
 							escape: markup('Заменяет символы, не допустимые в HTML- или XML-разметке на соответствующие сущности (entity)'),
 							callFunction: markup('Формирует строку вызова функции для привязки обработчика события к HTML-элементу'),
@@ -174,27 +185,27 @@
 						})
 					)),
 					section(3, 'Объявления', div(
-						referenceManual({
+						referenceManual('Clarino', $C, {
 							defineTags: markup('Создает набор определений тегов'),
 							getTagDefinitions: markup('Создает набор определений тегов'),
 							symbols: markup('Создает структуру для хранения строковых констант')
 						})
 					)),
 					section(3, 'CSS', div(
-						referenceManual({
-							writeStylesheet: false,
-							writeCssRules: false,
-							cssRules: false,
-							cssAttributes: false,
-							stylesheet: false,
-							writeStylesheet: false,
-							unit: false,
-							cssKeywords: false
+						referenceManual('Clarino.css', $C.css, {
+							// writeStylesheet: false,
+							// writeRules: false,
+							// rules: false,
+							// attributes: false,
+							// stylesheet: false,
+							// writeStylesheet: false,
+							// unit: false,
+							// keywords: false
 						})
 					)),
-					section(3, 'Остальные', div(
-						referenceManual({}, true)
-					))
+					referenceManual('Clarino', $C, {}, true),
+					referenceManual('Clarino.html', $H, {}, true),
+					referenceManual('Clarino.css', $C.css, {}, true),
 				))
 			);
 		}}
@@ -205,7 +216,7 @@
 				var sections = root.find('>.section').toArray();
 				if(!sections.length) return;
 				return ul(
-					apply(sections, function(sct){sct=$(sct);
+					$C.apply(sections, function(sct){sct=$(sct);
 						var sctID = sct.find('a').attr('name'),
 							sctTitle = sct.find('.title').html();
 						return li(
