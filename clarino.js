@@ -13,11 +13,35 @@ var Clarino = (function(){
 			for(var k in coll){F(coll[k], k);}
 	}
 	
+	function tag(name, content, selfClosing, notEmpty){
+		var h = [], a = [];
+		each(content, function(el){
+			if(typeof(el)!="object")
+				h.push(el);
+			else{
+				each(el, function(val, nm){
+					a.push(" "+nm+"=\""+val+"\"");
+				});
+			}
+		});
+		
+		h = h.join("");
+		if(h.match(/^\s+$/i)) h = "";
+		if(notEmpty && h.length==0) h = "&nbsp;";
+		
+		if(selfClosing && h.length==0)
+			return "<"+name+a.join("")+(Html.xhtmlMode? "/>":">");
+		else
+			return "<"+name+a.join("")+">"+h+"</"+name+">";
+	}
+	
 	function defineTags(tags, selfClosing, notEmpty){
 		if(!(tags instanceof Array)) tags = tags.split(";");
 		each(tags, function(t){
 			var tN = t.indexOf("_")==0?t.slice(1):t;
-			Html[t] = new Function("content", "return Clarino.tag(\""+tN+"\", arguments,"+(selfClosing?"true":"false")+","+(notEmpty?"true":"false")+");");
+			Html[t] = function(content){
+				return tag(tN, arguments, selfClosing, notEmpty);
+			}
 		});
 	}
 	
@@ -41,30 +65,7 @@ var Clarino = (function(){
 	function emptyValue(v){return !v ||(typeof(v)=="string"&&v.length==0);}
 	
 	extend(Html, {
-		tag: function(name, content, selfClosing, notEmpty){
-			var h = [];
-			var a = [];
-			each(content, function(el){
-				if(typeof(el)!="object")
-					h.push(el);
-				else{
-					each(el, function(val, nm){
-						a.push(" "+nm+"=\""+val+"\"");
-					});
-				}
-			});
-			
-			h = h.join("");
-			if(h.match(/^\s+$/i))
-				h = "";
-			if(notEmpty && h.length==0)
-				h = "&nbsp;";
-			
-			if(selfClosing && h.length==0)
-				return "<"+name+a.join("")+(Html.xhtmlMode? "/>":">");
-			else
-				return "<"+name+a.join("")+">"+h+"</"+name+">";
-		},
+		tag: tag,
 		
 		apply: function(coll, F, delim, hideEmpty){
 			var h = [];
@@ -234,6 +235,7 @@ var Clarino = (function(){
 	
 	Html.unit = function(name){
 		function format(v){
+			if(typeof(v)==='string') return v;
 			if(v instanceof Array) return v.join(name+' ')+name;
 			return v+name;
 		}
@@ -249,7 +251,8 @@ var Clarino = (function(){
 
 	extend(Html.unit, {
 		px: Html.unit('px'),
-		pc: Html.unit('%')
+		pc: Html.unit('%'),
+		em: Html.unit('em')
 	});
 
 	Html.symbols = function(str){
@@ -258,7 +261,7 @@ var Clarino = (function(){
 		return res;
 	};
 
-	Html.cssKeywords = Html.symbols('block;none;flex;row;column;left;right;center;hidden;pointer;bold;normal;uppercase;lowercase;absolute;relative;underline');
+	Html.cssKeywords = Html.symbols('block;none;flex;row;column;left;right;center;hidden;pointer;bold;normal;uppercase;lowercase;absolute;relative;underline;auto;collapse;separate;dotted;inherit;inline;default;solid;');
 	
 	function compareVersions(v1, v2){
 		if(v1==v2) return 0;
@@ -286,7 +289,7 @@ var Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	var topVersion = "1.0.0"
+	var topVersion = "0.0.0"
 	
 	if(typeof(JSUnit)=="object") Html.compareVersions = compareVersions;
 	
