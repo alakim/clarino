@@ -12,7 +12,7 @@
 			css = $H.cssKeywords;
 
 		var Settings = {
-			title: 'Clarino - руководство пользователя'
+			title: $H.format('Clarino v.{0} - руководство пользователя', Clarino.version())
 		};
 
 		$H.writeStylesheet({
@@ -22,7 +22,16 @@
 				' .code':{
 					backgroundColor: '#ccc',
 					width:px(300)
-				}
+				},
+				' .pnlErrorsDetected':{
+					display: css.none,
+					backgroundColor: '#ffc',
+					padding: px(10),
+					fontWeight: css.bold,
+					border: px(1)+' solid #f00'
+				},
+				' .success':{color:'#080'},
+				' .error':{color:'#e00'}
 			}
 		});
 		
@@ -36,9 +45,26 @@
 			);
 		}}
 
+		var errorsDetected = false,
+			errors = [];
+		function assert(val, expected){
+			if(val!=expected){
+				errorsDetected = true;
+				errors.push('Assertion failed: expected "'+$H.escape(expected)+'", but was "'+$H.escape(val)+'"');
+			}
+		}
+
+		function test(action){with($H){
+			errors = [];
+			action();
+			return errors.length?div({'class':'error'}, apply(errors, function(e){return div(e)}))
+				:div({'class':'success'}, 'test performed');
+		}}
+
 		function manual(){with($H){
 			return div({'class':'manual'},
 				h1(Settings.title),
+				div({'class':'error pnlErrorsDetected'}, 'Обнаружены ошибки'),
 				section('Назначение', div(
 					p('Программный модуль Clarino предназначен для формирования фрагментов HTML-, XML-, и CSS-кода.')
 				)),
@@ -48,14 +74,22 @@
 					p('Получение номера версии:'),
 					codesample(['Clarino.version()']),
 					p('Доступ к интерфейсу заданной версии:'),
-					codesample('Clarino.version("1.0.0")')
+					codesample('Clarino.version("1.0.0")'),
+					test(function(){
+						assert($H.div('abc'), '<div>abc</div>');
+					}),
+					test(function(){
+						assert($H.a({href:'#'}, 'xx'), '<a href="#">xx</a>');
+					})
 				))
 			);
 		}}
 
+
 		$(function(){
 			$('head title').html(Settings.title);
 			$('body').html(manual());
+			if(errorsDetected) $('.pnlErrorsDetected').show();
 		});
 	})(jQuery, Clarino.version('1.0.0'));
 	</script>
