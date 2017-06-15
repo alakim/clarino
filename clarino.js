@@ -120,7 +120,7 @@ var Clarino = (function(){
 		},
 		
 		
-		style: function(){
+		formatStyle: function(){
 			function addUnits(nm, val){
 				if((nm=="width"||nm=="height"||nm=="top"||nm=="left")&&typeof(val)=="number") return val+"px";
 				return val;
