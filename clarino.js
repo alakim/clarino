@@ -97,7 +97,7 @@ var Clarino = (function(){
 			return str;
 		},
 
-		escape: function(str){
+		entities: function(str){
 			return str.replace(/\&/g, '&amp;')
 				.replace(/</g, '&lt;')
 				.replace(/>/g, '&gt;')

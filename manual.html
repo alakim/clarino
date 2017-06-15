@@ -77,8 +77,8 @@
 		}}
 		function codesample(lines){with($H){with($C){
 			return pre({'class':'code'},
-				lines instanceof Array?apply(lines, function(ln){return escape(ln)+'\n';})
-					:escape(lines)
+				lines instanceof Array?apply(lines, function(ln){return entities(ln)+'\n';})
+					:entities(lines)
 			);
 		}}}
 
@@ -87,7 +87,7 @@
 		function assert(val, expected){
 			if(val!=expected){
 				errorsDetected = true;
-				errors.push('Assertion failed: expected "'+$C.escape(expected)+'", but was "'+$C.escape(val)+'"');
+				errors.push('Assertion failed: expected "'+$C.entities(expected)+'", but was "'+$C.entities(val)+'"');
 			}
 		}
 
@@ -105,14 +105,23 @@
 			return table({border:1, cellpadding:3, cellspacing:0, width:pc(100)},
 				$C.apply(doc, function(man, fld){
 					describedFields[prefix+'.'+fld] = true;
+					var itm = root[fld];
 					return tr(
-						td(root[fld]?null:(errorsDetected=true,div({'class':'error'}, 'not defined')), prefix, '.', fld),
+						td(
+							itm?null
+								:(errorsDetected=true,div({'class':'error'}, 'not defined')), prefix, '.',
+							fld,
+							typeof(itm)=='function'?'()':null
+						),
 						td(man)
 					);
 				}),
 				showRemaining?$C.apply(root, function(v, fld){
 					return describedFields[prefix+'.'+fld]?null:tr(
-						td(prefix, '.', fld),
+						td(
+							prefix, '.', fld, 
+							typeof(root[fld])=='function'?'()':null
+						),
 						td((errorsDetected=true,div({'class':'error'}, 'нет описания')))
 					);
 				}):null
@@ -156,12 +165,12 @@
 							var tags = 'a;abbr;address;area;article;aside;audio;b;base;bdi;bdo;blockquote;body;br;button;canvas;caption;cite;code;col;colgroup;datalist;dd;del;details;dfn;dialog;div;dl;dt;em;embed;fieldset;figcaption;figure;footer;form;h1;h2;h3;h4;h5;h6;head;header;hr;html;i;iframe;img;input;ins;kbd;keygen;label;legend;li;link;main;map;mark;menu;menuitem;meta;meter;nav;nobr;noscript;object;ol;optgroup;option;output;p;param;picture;pre;progress;q;rp;rt;ruby;s;samp;script;section;select;small;source;span;strong;style;sub;summary;sup;svg;table;tbody;td;textarea;tfoot;th;thead;time;title;tr;track;u;ul;var;video;wbr'.split(';');
 							var tagDefs = {};
 							for(var t,i=0; t=tags[i],i<tags.length; i++){
-								tagDefs[t] = $C.escape('Формирует HTML-тег <'+t+'>');
+								tagDefs[t] = $C.entities('Формирует HTML-тег <'+t+'>');
 							}
 							return tagDefs;
 						})
 					)),
-					section(3, 'Управление', div(
+					section(3, 'Шаблонизация', div(
 						referenceManual('Clarino', $C, {
 							apply: markup('Применяет шаблон к элементам массива или полям объекта'),
 							repeat: markup('Применяет шаблон указанное число раз'),
@@ -179,7 +188,7 @@
 							tag: markup('Создает фрагмент разметки с произвольным тегом'),
 							style: markup('Форматирует строку стилей в атрибутах HTML-элемента'),
 							format: markup('Форматирование строки со вставкой значений'),
-							escape: markup('Заменяет символы, не допустимые в HTML- или XML-разметке на соответствующие сущности (entity)'),
+							entities: markup('Заменяет символы, не допустимые в HTML- или XML-разметке на соответствующие сущности (entity)'),
 							callFunction: markup('Формирует строку вызова функции для привязки обработчика события к HTML-элементу'),
 							json: markup('Сериализует заданный объект в строку JSON')
 						})
