@@ -79,11 +79,9 @@ var Clarino = (function(){
 			return h.join(delim||"");
 		},
 		
-		times: repeat,
 		repeat: repeat,
 		
 		markup: markup,
-		tagCollection: markup,
 		
 		json: function(o){
 			if(o==null) return 'null';
@@ -289,7 +287,7 @@ var Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	var topVersion = "0.0.0"
+	var topVersion = "1.0.0";
 	
 	if(typeof(JSUnit)=="object") Html.compareVersions = compareVersions;
 	

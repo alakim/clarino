@@ -13,13 +13,32 @@
 			css = $H.cssKeywords;
 
 		var Settings = {
-			title: $H.format('Clarino v.{0} - руководство пользователя', Clarino.version())
+			title: $H.format('Clarino v.{0} - руководство пользователя', Clarino.version()),
+			link:{
+				color:{
+					lo:'#00a',
+					hi:'#06a'
+				}
+			}
 		};
 
 		$H.writeStylesheet({
+			'h1,h2,h3,h4':{
+				marginBottom:px(0)
+			},
 			'.manual':{
 				fontFamily: 'Verdana, Arial, Sans-Serif',
 				fontSize: px(14),
+				' a':{
+					':link':{color:Settings.link.color.lo},
+					':visited':{color:Settings.link.color.lo},
+					':hover':{color:Settings.link.color.hi}
+				},
+				' .navbar':{
+					backgroundColor: '#eee',
+					padding: px(3, 50),
+					margin: px(0, 0, 20, 0)
+				},
 				' .code':{
 					backgroundColor: '#ccc',
 					width:px(300)
@@ -35,9 +54,23 @@
 				' .error':{color:'#e00'}
 			}
 		});
-		
+
+		var uid = (function(){
+			var counter = 1;
+			return function(){
+				return counter++;
+			};
+		})();
+
 		function section(level, title, content){with($H){
-			return div($H['h'+level](title), content);
+			return div({'class':'section'},
+				a({name:'s'+uid()}),
+				$H['h'+level]({'class':'title'}, title),
+				div({'class':'navbar'},
+					a({'href':'#toc'}, 'К оглавлению')
+				),
+				content
+			);
 		}}
 		function codesample(lines){with($H){
 			return pre({'class':'code'},
@@ -87,6 +120,8 @@
 			return div({'class':'manual'},
 				h1(Settings.title),
 				div({'class':'error pnlErrorsDetected'}, 'Обнаружены ошибки'),
+				a({name:'toc'}),
+				div({'class':'pnlToc'}),
 				section(2, 'Назначение', div(
 					p('Программный модуль Clarino предназначен для формирования фрагментов HTML-, XML-, и CSS-кода.')
 				)),
@@ -104,11 +139,11 @@
 						assert($H.a({href:'#'}, 'xx'), '<a href="#">xx</a>');
 					})
 				)),
-				section(2, 'Справочник', div(
+				section(2, 'Справочник', markup(
 					section(3, 'HTML-теги', div(
 						referenceManual(function(){
 							// https://www.w3schools.com/tags/
-							var tags = 'a;abbr;address;area;article;aside;audio;b;base;bdi;bdo;blockquote;body;br;button;canvas;caption;cite;code;col;colgroup;datalist;dd;del;details;dfn;dialog;div;dl;dt;em;embed;fieldset;figcaption;figure;footer;form;h1;h2;h3;h4;h5;h6;head;header;hr;html;i;iframe;img;input;ins;kbd;keygen;label;legend;li;link;main;map;mark;menu;menuitem;meta;meter;nav;noscript;object;ol;optgroup;option;output;p;param;picture;pre;progress;q;rp;rt;ruby;s;samp;script;section;select;small;source;span;strong;style;sub;summary;sup;table;tbody;td;textarea;tfoot;th;thead;time;title;tr;track;u;ul;var;video;wbr'.split(';');
+							var tags = 'a;abbr;address;area;article;aside;audio;b;base;bdi;bdo;blockquote;body;br;button;canvas;caption;cite;code;col;colgroup;datalist;dd;del;details;dfn;dialog;div;dl;dt;em;embed;fieldset;figcaption;figure;footer;form;h1;h2;h3;h4;h5;h6;head;header;hr;html;i;iframe;img;input;ins;kbd;keygen;label;legend;li;link;main;map;mark;menu;menuitem;meta;meter;nav;nobr;noscript;object;ol;optgroup;option;output;p;param;picture;pre;progress;q;rp;rt;ruby;s;samp;script;section;select;small;source;span;strong;style;sub;summary;sup;svg;table;tbody;td;textarea;tfoot;th;thead;time;title;tr;track;u;ul;var;video;wbr'.split(';');
 							var tagDefs = {};
 							for(var t,i=0; t=tags[i],i<tags.length; i++){
 								tagDefs[t] = escape('Формирует HTML-тег <'+t+'>');
@@ -118,7 +153,43 @@
 					)),
 					section(3, 'Управление', div(
 						referenceManual({
-							apply:markup('Применяет шаблон к элементам массива или полям объекта')
+							apply: markup('Применяет шаблон к элементам массива или полям объекта'),
+							repeat: markup('Применяет шаблон указанное число раз'),
+							markup: markup('Контейнер для произвольного набора тегов, не формирующий для них родительский тег.')
+						})
+					)),
+					section(3, 'Настройка', div(
+						referenceManual({
+							version: markup('Возвращает текущую версию модуля или интерфейс для заданной версии'),
+							xhtmlMode: markup('Включает режим форматирования XHTML')
+						})
+					)),
+					section(3, 'Форматирование', div(
+						referenceManual({
+							tag: markup('Создает фрагмент разметки с произвольным тегом'),
+							format: markup('Форматирование строки со вставкой значений'),
+							escape: markup('Заменяет символы, не допустимые в HTML- или XML-разметке на соответствующие сущности (entity)'),
+							callFunction: markup('Формирует строку вызова функции для привязки обработчика события к HTML-элементу'),
+							json: markup('Сериализует заданный объект в строку JSON')
+						})
+					)),
+					section(3, 'Объявления', div(
+						referenceManual({
+							defineTags: markup('Создает набор определений тегов'),
+							getTagDefinitions: markup('Создает набор определений тегов'),
+							symbols: markup('Создает структуру для хранения строковых констант')
+						})
+					)),
+					section(3, 'CSS', div(
+						referenceManual({
+							writeStylesheet: false,
+							writeCssRules: false,
+							cssRules: false,
+							cssAttributes: false,
+							stylesheet: false,
+							writeStylesheet: false,
+							unit: false,
+							cssKeywords: false
 						})
 					)),
 					section(3, 'Остальные', div(
@@ -128,10 +199,30 @@
 			);
 		}}
 
+		function buildToc(root){with($H){
+			root = root || $('.manual');
+			function tocLevel(root){
+				var sections = root.find('>.section').toArray();
+				if(!sections.length) return;
+				return ul(
+					apply(sections, function(sct){sct=$(sct);
+						var sctID = sct.find('a').attr('name'),
+							sctTitle = sct.find('.title').html();
+						return li(
+							a({href:'#'+sctID}, sctTitle),
+							tocLevel(sct)
+						);
+					})
+				);
+			}
+			$('.pnlToc').html(tocLevel(root));
+		}}
+
 
 		$(function(){
 			$('head title').html(Settings.title);
 			$('body').html(manual());
+			buildToc();
 			if(errorsDetected) $('.pnlErrorsDetected').show();
 		});
 	})(jQuery, Clarino.version('1.0.0'));
