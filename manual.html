@@ -9,6 +9,7 @@
 	<script>
 	(function($, $H){
 		var px = $H.unit.px,
+			pc = $H.unit.pc,
 			css = $H.cssKeywords;
 
 		var Settings = {
@@ -61,6 +62,23 @@
 				:div({'class':'success'}, 'test performed');
 		}}
 
+		function referenceManual(doc){with($H){
+			return table({border:1, cellpadding:3, cellspacing:0, width:pc(100)},
+				apply(doc, function(man, fld){
+					return tr(
+						td($H[fld]?null:(errorsDetected=true,div({'class':'error'}, 'not defined')), fld),
+						td(man)
+					);
+				}),
+				apply($H, function(v, fld){
+					return doc[fld]?null:tr(
+						td(fld),
+						td((errorsDetected=true,div({'class':'error'}, 'нет описания')))
+					);
+				})
+			);
+		}}
+
 		function manual(){with($H){
 			return div({'class':'manual'},
 				h1(Settings.title),
@@ -80,6 +98,11 @@
 					}),
 					test(function(){
 						assert($H.a({href:'#'}, 'xx'), '<a href="#">xx</a>');
+					})
+				)),
+				section('Справочник', div(
+					referenceManual({
+						div:markup('Формирует HTML-тег DIV')
 					})
 				))
 			);
