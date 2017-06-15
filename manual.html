@@ -36,8 +36,8 @@
 			}
 		});
 		
-		function section(title, content){with($H){
-			return div(h2(title), content);
+		function section(level, title, content){with($H){
+			return div($H['h'+level](title), content);
 		}}
 		function codesample(lines){with($H){
 			return pre({'class':'code'},
@@ -62,7 +62,7 @@
 				:div({'class':'success'}, 'test performed');
 		}}
 
-		function referenceManual(doc){with($H){
+		function referenceManual(doc, showRemaining){with($H){
 			return table({border:1, cellpadding:3, cellspacing:0, width:pc(100)},
 				apply(doc, function(man, fld){
 					return tr(
@@ -70,12 +70,12 @@
 						td(man)
 					);
 				}),
-				apply($H, function(v, fld){
+				showRemaining?apply($H, function(v, fld){
 					return doc[fld]?null:tr(
 						td(fld),
 						td((errorsDetected=true,div({'class':'error'}, 'нет описания')))
 					);
-				})
+				}):null
 			);
 		}}
 
@@ -83,10 +83,10 @@
 			return div({'class':'manual'},
 				h1(Settings.title),
 				div({'class':'error pnlErrorsDetected'}, 'Обнаружены ошибки'),
-				section('Назначение', div(
+				section(2, 'Назначение', div(
 					p('Программный модуль Clarino предназначен для формирования фрагментов HTML-, XML-, и CSS-кода.')
 				)),
-				section('Подключение', div(
+				section(2, 'Подключение', div(
 					p('Для использования библиотеки Clarino достаточно подключить её к веб-странице:'),
 					codesample(['<scr'+'ipt src="clarino.js"></sc'+'ript>']),
 					p('Получение номера версии:'),
@@ -100,10 +100,21 @@
 						assert($H.a({href:'#'}, 'xx'), '<a href="#">xx</a>');
 					})
 				)),
-				section('Справочник', div(
-					referenceManual({
-						div:markup('Формирует HTML-тег DIV')
-					})
+				section(2, 'Справочник', div(
+					section(3, 'HTML-теги', div(
+						referenceManual({
+							div:markup('Формирует HTML-тег DIV'),
+							p:false, ul:false, li:false
+						})
+					)),
+					section(3, 'Управление', div(
+						referenceManual({
+							apply:markup('Применяет шаблон к элементам массива или полям объекта')
+						})
+					)),
+					section(3, 'Остальные', div(
+						referenceManual({}, true)
+					))
 				))
 			);
 		}}
