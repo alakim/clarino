@@ -9,7 +9,7 @@
 	<script>
 	(function($, $C){
 		//console.log($C);
-		var $H = $C.html;
+		var $H = $C.simple;
 
 		var px = $C.css.unit.px,
 			pc = $C.css.unit.pc,
@@ -43,8 +43,8 @@
 					margin: px(0, 0, 20, 0)
 				},
 				' .code':{
-					backgroundColor: '#ccc',
-					width:px(300)
+					backgroundColor: '#eaeaea',
+					fontFamily: 'Courier New, Monospace'
 				},
 				' .pnlErrorsDetected':{
 					display: css.none,
@@ -75,21 +75,66 @@
 				content
 			);
 		}}
-		function codesample(lines){with($H){with($C){
+		function codesample(lines){with($H){
 			return pre({'class':'code'},
 				lines instanceof Array?apply(lines, function(ln){return entities(ln)+'\n';})
 					:entities(lines)
 			);
-		}}}
+		}}
+
+		function code(str){
+			return $H.span({'class':'code'}, str);
+		}
 
 		var errorsDetected = false,
 			errors = [];
+
+		function equals(v1, v2){
+			if(v1 instanceof Array){
+				if(!(v2 instanceof Array)) return false;
+				if(v1.length!=v2.length) return false;
+				for(var i=0; i<v1.length; i++){if(!equals(v1[i], v2[i])) return false;}
+				return true;
+			}
+			if(typeof(v1)=='object'){
+				if(typeof(v2)!='object' || v2 instanceof Array) return false;
+				for(var k in v1){if(!equals(v1[k], v2[k])) return false;}
+				for(var k in v2){if(!equals(v1[k], v2[k])) return false;}
+				return true;
+			}
+			return v1==v2;
+		}
+
 		function assert(val, expected){
-			if(val!=expected){
+			if(!equals(val, expected)){
 				errorsDetected = true;
 				errors.push('Assertion failed: expected "'+$C.entities(expected)+'", but was "'+$C.entities(val)+'"');
 			}
 		}
+
+		function assertTrue(val){
+			assert(val, true);
+		}
+		
+		test(function(){
+			if(!equals([1,2], [1,2])) console.error('Equation test failed');
+			if(equals([1,2], null)) console.error('Equation test failed');
+			if(equals([1,2], 2)) console.error('Equation test failed');
+			if(equals([1,2], [2])) console.error('Equation test failed');
+			if(equals([1,2], {x:1})) console.error('Equation test failed');
+			if(equals(null, 3)) console.error('Equation test failed');
+			if(!equals(null, null)) console.error('Equation test failed');
+			if(!equals({x:2, y:3}, {y:3, x:2})) console.error('Equation test failed');
+			if(equals({x:2, y:3}, {x:2})) console.error('Equation test failed');
+			if(equals({x:2, y:3}, {y:3})) console.error('Equation test failed');
+			if(equals({x:2, y:3}, [3])) console.error('Equation test failed');
+			if(!equals({x:2, y:{a:1}}, {y:{a:1}, x:2})) console.error('Equation test failed');
+			if(!equals(3, 3)) console.error('Equation test failed');
+			if(!equals('abc', 'abc')) console.error('Equation test failed');
+			if(!equals(true, true)) console.error('Equation test failed');
+			if(equals(null, false)) console.error('Equation test failed');
+			if(equals(false, null)) console.error('Equation test failed');
+		});
 
 		function test(action){with($H){
 			errors = [];
@@ -100,7 +145,7 @@
 
 		var describedFields = {};
 
-		function referenceManual(prefix, root, doc, showRemaining){with($H){with($C){
+		function referenceManual(prefix, root, doc, showRemaining){with($H){
 			if(typeof(doc)=='function') doc = doc();
 			return table({border:1, cellpadding:3, cellspacing:0, width:pc(100)},
 				$C.apply(doc, function(man, fld){
@@ -126,7 +171,7 @@
 					);
 				}):null
 			);
-		}}}
+		}}
 
 		function manual(){with($H){
 			var markup = $C.markup;
@@ -156,7 +201,8 @@
 					section(3, 'Разделы', div(
 						referenceManual('Clarino', $C, { 
 							html: markup('Содержит определения HTML-тегов'),
-							css: markup('Содержит функции для формирования CSS-таблиц')
+							css: markup('Содержит функции для формирования CSS-таблиц'),
+							simple: markup('Содержит упрощенный интерфейс для создания простых веб-форм')
 						})
 					)),
 					section(3, 'HTML-теги', div(
@@ -180,7 +226,34 @@
 					section(3, 'Настройка', div(
 						referenceManual('Clarino', $C, {
 							version: markup('Возвращает текущую версию модуля или интерфейс для заданной версии'),
-							xhtmlMode: markup('Включает режим форматирования XHTML')
+							xhtmlMode: markup('Включает режим форматирования XHTML'),
+							extend: markup(
+								p('Добавляет поля к существующему объекту'),
+								test(function(){
+									var obj = {x:3};
+									$C.extend(obj, {y:'abc'});
+									assert(obj, {x:3, y:'abc'});
+								})
+							),
+							compose: markup(
+								p('Создает интерфейсный объект из полей и методов Clarino. Используется для создания упрощенных интерфейсов.'),
+								p('Получает массив путей к элементам Clarino, которые должны быть включены в новый объект. Вместо массива можно передавать строку, состоящую из путей, разделенных точкой с запятой.'),
+								p('Пример:'),
+								codesample([
+									'var simple = Clarino.compose("version;apply;html.p.html.div");'
+								]),
+								p('В результате будет получен объект ', code('simple'), ', содержащий методы ', code('version'), ', ', code('apply'), ', ', code('p'), ', и ', code('div'), '.'),
+								test(function(){
+									var obj = $C.compose('version;apply;html.p;html.div');
+									assertTrue(obj.version && typeof(obj.version)=='function' && obj.version()==$C.version());
+									assertTrue(obj.apply!=null && typeof(obj.apply)=='function');
+									assertTrue(obj.p && typeof(obj.p)=='function');
+									assertTrue(obj.div && typeof(obj.div)=='function');
+									obj = $C.compose(['version','apply']);
+									assertTrue(obj.version && typeof(obj.version)=='function' && obj.version()==$C.version());
+									assertTrue(obj.apply!=null && typeof(obj.apply)=='function');
+								})
+							)
 						})
 					)),
 					section(3, 'Форматирование', div(

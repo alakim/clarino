@@ -6,6 +6,20 @@ var Clarino = (function(){
 	};
 	
 	function extend(o,s){for(var k in s){o[k] = s[k];}}
+
+	function compose(path){
+		if(typeof(path)=='string') path = path.split(';');
+		var res = {};
+		for(var p,i=0; p=path[i],i<path.length; i++){
+			p = p.split('.');
+			var v = Clarino, s;
+			for(var j=0; j<p.length; j++){
+				s = p[j]; v = v[s];
+			}
+			res[s] = v;
+		}
+		return res;
+	};
 	
 	function each(coll, F){
 		if(!coll) return;
@@ -67,6 +81,8 @@ var Clarino = (function(){
 	function emptyValue(v){return !v ||(typeof(v)=="string"&&v.length==0);}
 	
 	extend(Clarino, {
+		extend: extend,
+		compose: compose,
 		repeat: repeat,
 		
 		markup: markup,
@@ -98,6 +114,8 @@ var Clarino = (function(){
 		},
 
 		entities: function(str){
+			if(!str) return '';
+			str = str.toString();
 			return str.replace(/\&/g, '&amp;')
 				.replace(/</g, '&lt;')
 				.replace(/>/g, '&gt;')
@@ -306,6 +324,8 @@ var Clarino = (function(){
 	extend(Clarino, intf);
 	Clarino.html = Html;
 	Clarino.css = Css;
+	Clarino.simple = compose('markup;apply;repeat;format;formatStyle;entities;callFunction');
+	extend(Clarino.simple, Html);
 	
 	return Clarino;
 })();
