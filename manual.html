@@ -37,6 +37,9 @@
 					':visited':{color:Settings.link.color.lo},
 					':hover':{color:Settings.link.color.hi}
 				},
+				' .button':{
+					cursor: css.pointer
+				},
 				' .navbar':{
 					backgroundColor: '#eee',
 					padding: px(3, 50),
@@ -70,9 +73,12 @@
 				a({name:'s'+uid()}),
 				$H['h'+level]({'class':'title'}, title),
 				div({'class':'navbar'},
+					span({'class':'button lnkRoll', href:'#', title:'Свернуть'}, '&#x25B2;'), ' ',
 					a({'href':'#toc'}, 'К оглавлению')
 				),
-				content
+				div({'class':'sectionContent'},
+					content
+				)
 			);
 		}}
 		function codesample(lines){with($H){
@@ -200,9 +206,18 @@
 				section(2, 'Справочник', markup(
 					section(3, 'Разделы', div(
 						referenceManual('Clarino', $C, { 
-							html: markup('Содержит определения HTML-тегов'),
-							css: markup('Содержит функции для формирования CSS-таблиц'),
-							simple: markup('Содержит упрощенный интерфейс для создания простых веб-форм')
+							html: markup(
+								p('Содержит определения HTML-тегов'),
+								test(function(){assertTrue(typeof($C.html)=='object');})
+							),
+							css: markup(
+								p('Содержит функции для формирования CSS-таблиц'),
+								test(function(){assertTrue(typeof($C.css)=='object');})
+							),
+							simple: markup(
+								p('Содержит упрощенный интерфейс для создания простых веб-форм'),
+								test(function(){assertTrue(typeof($C.simple)=='object');})
+							)
 						})
 					)),
 					section(3, 'HTML-теги', div(
@@ -211,14 +226,22 @@
 							var tags = 'a;abbr;address;area;article;aside;audio;b;base;bdi;bdo;blockquote;body;br;button;canvas;caption;cite;code;col;colgroup;datalist;dd;del;details;dfn;dialog;div;dl;dt;em;embed;fieldset;figcaption;figure;footer;form;h1;h2;h3;h4;h5;h6;head;header;hr;html;i;iframe;img;input;ins;kbd;keygen;label;legend;li;link;main;map;mark;menu;menuitem;meta;meter;nav;nobr;noscript;object;ol;optgroup;option;output;p;param;picture;pre;progress;q;rp;rt;ruby;s;samp;script;section;select;small;source;span;strong;style;sub;summary;sup;svg;table;tbody;td;textarea;tfoot;th;thead;time;title;tr;track;u;ul;var;video;wbr'.split(';');
 							var tagDefs = {};
 							for(var t,i=0; t=tags[i],i<tags.length; i++){
-								tagDefs[t] = $C.entities('Формирует HTML-тег <'+t+'>');
+								tagDefs[t] = markup(
+									p($C.entities('Формирует HTML-тег <'+t+'>')),
+									test(function(){
+										var f = $H[t];
+										assertTrue(typeof(f)=='function' && f('x')=='<'+t+'>x</'+t+'>');
+									})
+								);
 							}
 							return tagDefs;
 						})
 					)),
 					section(3, 'Шаблонизация', div(
 						referenceManual('Clarino', $C, {
-							apply: markup('Применяет шаблон к элементам массива или полям объекта'),
+							apply: markup(
+								p('Применяет шаблон к элементам массива или полям объекта')
+							),
 							repeat: markup('Применяет шаблон указанное число раз'),
 							markup: markup('Контейнер для произвольного набора тегов, не формирующий для них родительский тег.')
 						})
@@ -287,7 +310,7 @@
 					)),
 					referenceManual('Clarino', $C, {}, true),
 					referenceManual('Clarino.html', $C.html, {}, true),
-					referenceManual('Clarino.simple', $H, {}, true),
+					// referenceManual('Clarino.simple', $H, {}, true),
 					referenceManual('Clarino.css', $C.css, {}, true),
 				))
 			);
@@ -296,7 +319,9 @@
 		function buildToc(root){with($H){
 			root = root || $('.manual');
 			function tocLevel(root){
-				var sections = root.find('>.section').toArray();
+				var content = root.find('>.sectionContent');
+				if(!content.length) content = root;
+				var sections = content.find('>.section').toArray();
 				if(!sections.length) return;
 				return ul(
 					$C.apply(sections, function(sct){sct=$(sct);
@@ -312,10 +337,27 @@
 			$('.pnlToc').html(tocLevel(root));
 		}}
 
+		function bindEvents(){
+			$('.manual')
+				.find('.lnkRoll').click(function(){var self = $(this);
+					var pnl = self.parent().parent().find('.sectionContent');
+					if(pnl.is(':visible')){
+						self.html('&#x25BC;').attr({title:'Развернуть'});
+						pnl.fadeOut();
+					}
+					else{
+						self.html('&#x25B2;').attr({title:'Свернуть'});
+						pnl.fadeIn();
+					}
+				}).end()
+			;
+		}
+
 
 		$(function(){
 			$('head title').html(Settings.title);
 			$('body').html(manual());
+			bindEvents();
 			buildToc();
 			if(errorsDetected) $('.pnlErrorsDetected').show();
 		});
