@@ -326,7 +326,9 @@ var Clarino = (function(){
 	Clarino.html = Html;
 	Clarino.css = Css;
 	Clarino.simple = compose('markup;apply;repeat;format;formatStyle;entities;callFunction');
-	extend(Clarino.simple, Html);
+	//var simpleHtml = compose('html.div');
+	var simpleHtml = compose('html.div;html.a;html.p;html.span;html.nobr;html.ul;html.ol;html.li;html.table;html.tbody;html.thead;html.tr;html.td;html.th;html.input;html.label;html.textarea;html.pre;html.select;html.option;html.optgroup;html.h1;html.h2;html.h3;html.h4;html.h5;html.h6;html.button;html.form;html.dl;html.dt;html.dd');
+	extend(Clarino.simple, simpleHtml);
 	
 	return Clarino;
 })();

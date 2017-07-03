@@ -68,10 +68,10 @@
 			};
 		})();
 
-		function section(level, title, content){with($H){
+		function manualSection(level, sectTitle, content){with($H){
 			return div({'class':'section'},
 				a({name:'s'+uid()}),
-				$H['h'+level]({'class':'title'}, title),
+				$H['h'+level]({'class':'title'}, sectTitle),
 				div({'class':'navbar'},
 					span({'class':'button lnkRoll', href:'#', title:'Свернуть'}, '&#x25B2;'), ' ',
 					a({'href':'#toc'}, 'К оглавлению')
@@ -186,10 +186,10 @@
 				div({'class':'error pnlErrorsDetected'}, 'Обнаружены ошибки'),
 				a({name:'toc'}),
 				div({'class':'pnlToc'}),
-				section(2, 'Назначение', div(
+				manualSection(2, 'Назначение', div(
 					p('Программный модуль Clarino предназначен для формирования фрагментов HTML-, XML-, и CSS-кода.')
 				)),
-				section(2, 'Подключение', div(
+				manualSection(2, 'Подключение', div(
 					p('Для использования библиотеки Clarino достаточно подключить её к веб-странице:'),
 					codesample(['<scr'+'ipt src="clarino.js"></sc'+'ript>']),
 					p('Получение номера версии:'),
@@ -203,8 +203,8 @@
 						assert($H.a({href:'#'}, 'xx'), '<a href="#">xx</a>');
 					})
 				)),
-				section(2, 'Справочник', markup(
-					section(3, 'Разделы', div(
+				manualSection(2, 'Справочник', markup(
+					manualSection(3, 'Разделы', div(
 						referenceManual('Clarino', $C, { 
 							html: markup(
 								p('Содержит определения HTML-тегов'),
@@ -220,8 +220,8 @@
 							)
 						})
 					)),
-					section(3, 'HTML-теги', div(
-						referenceManual('Clarino.html', $H, function(){
+					manualSection(3, 'HTML-теги', div(
+						referenceManual('Clarino.html', $C.html, function(){
 							// https://www.w3schools.com/tags/
 							var tags = 'a;abbr;address;area;article;aside;audio;b;base;bdi;bdo;blockquote;body;br;button;canvas;caption;cite;code;col;colgroup;datalist;dd;del;details;dfn;dialog;div;dl;dt;em;embed;fieldset;figcaption;figure;footer;form;h1;h2;h3;h4;h5;h6;head;header;hr;html;i;iframe;img;input;ins;kbd;keygen;label;legend;li;link;main;map;mark;menu;menuitem;meta;meter;nav;nobr;noscript;object;ol;optgroup;option;output;p;param;picture;pre;progress;q;rp;rt;ruby;s;samp;script;section;select;small;source;span;strong;style;sub;summary;sup;svg;table;tbody;td;textarea;tfoot;th;thead;time;title;tr;track;u;ul;var;video;wbr'.split(';');
 							var tagDefs = {};
@@ -229,7 +229,7 @@
 								tagDefs[t] = markup(
 									p($C.entities('Формирует HTML-тег <'+t+'>')),
 									test(function(){
-										var f = $H[t];
+										var f = $C.html[t];
 										assertTrue(typeof(f)=='function' && f('x')=='<'+t+'>x</'+t+'>');
 									})
 								);
@@ -237,7 +237,7 @@
 							return tagDefs;
 						})
 					)),
-					section(3, 'Шаблонизация', div(
+					manualSection(3, 'Шаблонизация', div(
 						referenceManual('Clarino', $C, {
 							apply: markup(
 								p('Применяет шаблон к элементам массива или полям объекта')
@@ -246,7 +246,7 @@
 							markup: markup('Контейнер для произвольного набора тегов, не формирующий для них родительский тег.')
 						})
 					)),
-					section(3, 'Настройка', div(
+					manualSection(3, 'Настройка', div(
 						referenceManual('Clarino', $C, {
 							version: markup('Возвращает текущую версию модуля или интерфейс для заданной версии'),
 							xhtmlMode: markup('Включает режим форматирования XHTML'),
@@ -279,7 +279,7 @@
 							)
 						})
 					)),
-					section(3, 'Форматирование', div(
+					manualSection(3, 'Форматирование', div(
 						referenceManual('Clarino', $C, {
 							tag: markup('Создает фрагмент разметки с произвольным тегом'),
 							formatStyle: markup('Форматирует строку стилей для размещения в атрибуте HTML-элемента'),
@@ -289,14 +289,14 @@
 							json: markup('Сериализует заданный объект в строку JSON')
 						})
 					)),
-					section(3, 'Объявления', div(
+					manualSection(3, 'Объявления', div(
 						referenceManual('Clarino', $C, {
 							defineTags: markup('Создает набор определений тегов'),
 							getTagDefinitions: markup('Создает набор определений тегов'),
 							symbols: markup('Создает структуру для хранения строковых констант')
 						})
 					)),
-					section(3, 'CSS', div(
+					manualSection(3, 'CSS', div(
 						referenceManual('Clarino.css', $C.css, {
 							// writeStylesheet: false,
 							// writeRules: false,
@@ -322,7 +322,7 @@
 				var content = root.find('>.sectionContent');
 				if(!content.length) content = root;
 				var sections = content.find('>.section').toArray();
-				if(!sections.length) return;
+				if(!sections.length) return; // 'NO Sections';
 				return ul(
 					$C.apply(sections, function(sct){sct=$(sct);
 						var sctID = sct.find('a').attr('name'),
@@ -334,7 +334,9 @@
 					})
 				);
 			}
-			$('.pnlToc').html(tocLevel(root));
+			var hcode = tocLevel(root);
+			//console.log(hcode);
+			$('.pnlToc').html(hcode);
 		}}
 
 		function bindEvents(){
