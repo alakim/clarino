@@ -95,12 +95,12 @@ var Clarino = (function(){
 			if(typeof(o)=="function") return "";
 			if(o.constructor==Array){
 				var res = [];
-				for(var i=0; i<o.length; i++) res.push(Html.json(o[i]));
+				for(var i=0; i<o.length; i++) res.push(Clarino.json(o[i]));
 				return "["+res.join(",")+"]";
 			}
 			if(typeof(o)=="object"){
 				var res = [];
-				for(var k in o) res.push(k+":"+Html.json(o[k]));
+				for(var k in o) res.push(k+":"+Clarino.json(o[k]));
 				return "{"+res.join(",")+"}";
 			}
 			return "";
@@ -160,7 +160,7 @@ var Clarino = (function(){
 			for(var i=1; i<arguments.length; i++){
 				var arg = arguments[i];
 				arg = typeof(arg)=="string" && arg.match(/^@/)? arg.slice(1, arg.length)
-					:Html.json(arg);
+					:Clarino.json(arg);
 				args.push(arg);
 			}
 			return [name, "(", args.join(","), ")"].join("");
@@ -171,7 +171,7 @@ var Clarino = (function(){
 		},
 		getTagDefinitions: function(tags){
 			if(!(tags instanceof(Array)))tags=tags.split(";");
-			function defTag(nm){return function(){return Html.tag(nm, arguments, true);}}
+			function defTag(nm){return function(){return Clarino.tag(nm, arguments, true);}}
 			var res = {}
 			for(var i=0,t; t=tags[i],i<tags.length; i++) res[t] = defTag(t);
 			return res;
@@ -313,7 +313,8 @@ var Clarino = (function(){
 	
 	var topVersion = "1.0.0";
 	
-	if(typeof(JSUnit)=="object") Clarino.compareVersions = compareVersions;
+	// if(typeof(JSUnit)=="object") 
+	Clarino.compareVersions = compareVersions;
 	
 	var interfaces = {};
 	interfaces[topVersion] = Clarino;
@@ -327,7 +328,7 @@ var Clarino = (function(){
 	Clarino.css = Css;
 	Clarino.simple = compose('markup;apply;repeat;format;formatStyle;entities;callFunction');
 	//var simpleHtml = compose('html.div');
-	var simpleHtml = compose('html.div;html.a;html.p;html.span;html.nobr;html.ul;html.ol;html.li;html.table;html.tbody;html.thead;html.tr;html.td;html.th;html.input;html.label;html.textarea;html.pre;html.select;html.option;html.optgroup;html.h1;html.h2;html.h3;html.h4;html.h5;html.h6;html.button;html.form;html.dl;html.dt;html.dd');
+	var simpleHtml = compose('html.div;html.a;html.p;html.span;html.nobr;html.hr;html.br;html.img;html.ul;html.ol;html.li;html.table;html.tbody;html.thead;html.tr;html.td;html.th;html.input;html.label;html.textarea;html.pre;html.select;html.option;html.optgroup;html.h1;html.h2;html.h3;html.h4;html.h5;html.h6;html.button;html.form;html.dl;html.dt;html.dd');
 	extend(Clarino.simple, simpleHtml);
 	
 	return Clarino;

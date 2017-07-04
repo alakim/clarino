@@ -43,7 +43,12 @@
 				' .navbar':{
 					backgroundColor: '#eee',
 					padding: px(3, 50),
-					margin: px(0, 0, 20, 0)
+					margin: px(0, 0, 20, 0),
+					' a':{
+						':link':{textDecoration:css.none},
+						':visited':{textDecoration:css.none},
+						':hover':{textDecoration:css.underline}
+					}
 				},
 				' .code':{
 					backgroundColor: '#eaeaea',
@@ -73,8 +78,8 @@
 				a({name:'s'+uid()}),
 				$H['h'+level]({'class':'title'}, sectTitle),
 				div({'class':'navbar'},
-					span({'class':'button lnkRoll', href:'#', title:'Свернуть'}, '&#x25B2;'), ' ',
-					a({'href':'#toc'}, 'К оглавлению')
+					a({'href':'#toc', title:'К оглавлению'}, '&#x2261'), ' ',
+					span({'class':'button lnkRoll', href:'#', title:'Свернуть'}, '&#x25B2;')
 				),
 				div({'class':'sectionContent'},
 					content
@@ -142,11 +147,20 @@
 			if(equals(false, null)) console.error('Equation test failed');
 		});
 
-		function test(action){with($H){
+		function test(name, group, action){with($H){
+			if(arguments.length==1){
+				action = name;
+				group = name = '';
+			}
+			else
+				name = $H.format('"{0}:{1}"', group, name);
 			errors = [];
 			action();
-			return errors.length?div({'class':'error'}, $C.apply(errors, function(e){return div(e)}))
-				:div({'class':'success'}, 'test performed');
+			return errors.length?div({'class':'error'}, 
+					name, ' ',
+					$C.apply(errors, function(e){return div(e)})
+				)
+				:div({'class':'success'}, 'Test ', name, ' performed');
 		}}
 
 		var describedFields = {};
@@ -311,7 +325,420 @@
 					referenceManual('Clarino', $C, {}, true),
 					referenceManual('Clarino.html', $C.html, {}, true),
 					// referenceManual('Clarino.simple', $H, {}, true),
-					referenceManual('Clarino.css', $C.css, {}, true),
+					referenceManual('Clarino.css', $C.css, {}, true)
+				)),
+				manualSection(1, 'Общие тесты', div(
+					test("Подключение модуля Clarino", "Configuration", function(){
+						assert(typeof(Clarino), "object");
+					}),
+
+					test("compareVersions", "Configuration", function(){
+						assert(Clarino.compareVersions("1.2.3", "1.2.3"), 0);
+						assert(Clarino.compareVersions("2.2.3", "1.2.3"), 1);
+						assert(Clarino.compareVersions("1.2.3", "2.2.3"), -1);
+						assert(Clarino.compareVersions("1.3.3", "1.2.3"), 1);
+						assert(Clarino.compareVersions("1.2.3", "1.3.3"), -1);
+						assert(Clarino.compareVersions("1.2.4", "1.2.3"), 1);
+						assert(Clarino.compareVersions("1.2.3", "1.2.4"), -1);
+									
+						assert(Clarino.compareVersions("2.0.9", "2.0.9"), 0);
+						assert(Clarino.compareVersions("2.0.10", "2.0.10"), 0);
+									
+						assert(Clarino.compareVersions("2.0.10", "2.0.9"), 1, "Err 1");
+						assert(Clarino.compareVersions("2.0.9", "2.0.10"), -1, "Err 2");
+					}),
+
+					test("Простая верстка", "Верстка", function(){
+						with(Clarino.simple){
+							assert(
+								div(
+									p("abc"),
+									p("def")
+								),
+								"<div><p>abc</p><p>def</p></div>"
+							);
+						}
+					}),
+
+					test("Простая верстка с атрибутами", "Верстка", function(){
+						with(Clarino.simple){
+							assert(
+								div({
+										"class":"panel",
+										width:200
+									},
+									p("abc")
+								),
+								"<div class=\"panel\" width=\"200\"><p>abc</p></div>"
+							);
+						}
+					}),
+
+					test("Простая таблица", "Верстка", function(){
+						with(Clarino.simple){
+							assert(
+								table({border:0, cellpadding:0, cellspacing:0},
+									tr(td("11"), td("12")),
+									tr(td("21"), td("22"))
+								),
+								"<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr><td>11</td><td>12</td></tr><tr><td>21</td><td>22</td></tr></table>"
+							);
+						}
+					}),
+
+					test("Таблица с пустыми ячейками", "Верстка", function(){
+						with(Clarino.simple){
+							assert(
+								table(
+									tr(th("ss"), th("  ")),
+									tr(td("11"), td("   ")),
+									tr(td(), td("22"))
+								),
+								"<table><tr><th>ss</th><th>&nbsp;</th></tr><tr><td>11</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>22</td></tr></table>"
+							)
+						}
+					}),
+
+					test("Картинки", "Верстка", function(){
+						with(Clarino.simple){
+							assert(
+								div(
+									hr(),
+									img({src:"null.gif", width:"10px"}),
+									br(),
+									p("abc")
+								),
+								"<div><hr/><img src=\"null.gif\" width=\"10px\"/><br/><p>abc</p></div>"
+							);
+						}
+					}),
+
+					test("tagCollection", "Верстка", function(){
+						with(Clarino.simple){
+							assert(
+								markup(
+									div("abc"),
+									"def",
+									div("ghi")
+								),
+								"<div>abc</div>def<div>ghi</div>"
+							);
+						}
+					}),
+					
+					test("Arbitrary Attributes", "Верстка", function(){
+						with(Clarino.simple){
+							var b = true;
+							assert(
+								div({width:4},
+									b?{height:5}:null,
+									!b?{"z-index":3}:null,
+									"xxx"
+								),
+								"<div width=\"4\" height=\"5\">xxx</div>"
+							);
+						}
+					}),
+
+					test("Таблица", "Шаблоны", function(){
+						with(Clarino.simple){
+							var data = [{nm:"abc", nr:1}, {nm:"def", nr:2}];
+							assert(
+								table(
+									apply(data, function(el){
+										return tr(td(el.nm), td(el.nr))
+									})
+								),
+								"<table><tr><td>abc</td><td>1</td></tr><tr><td>def</td><td>2</td></tr></table>"
+							);
+						}
+					}),
+
+					test("Таблица с раскрашенными строками", "Шаблоны", function(){
+						with(Clarino.simple){
+							var data = [{nm:"abc", nr:1}, {nm:"def", nr:2}, {nm:"ghi", nr:3}];
+							assert(
+								table(
+									apply(data, function(el, i){
+										return tr(i%2?null:{"class":"even"},
+											td(el.nm), td(el.nr)
+										)
+									})
+								),
+								"<table><tr class=\"even\"><td>abc</td><td>1</td></tr><tr><td>def</td><td>2</td></tr><tr class=\"even\"><td>ghi</td><td>3</td></tr></table>"
+							);
+						}
+					}),
+
+					test("Таблица с заголовком", "Шаблоны", function(){
+						with(Clarino.simple){
+							var data = [{nm:"abc", nr:1}, {nm:"def", nr:2}];
+							assert(
+								table({border:0, cellpadding:3, cellspacing:0},
+									tr(th("Name"), th("Number")),
+									apply(data, function(el){
+										return tr(td(el.nm), td(el.nr))
+									})
+								),
+								"<table border=\"0\" cellpadding=\"3\" cellspacing=\"0\"><tr><th>Name</th><th>Number</th></tr><tr><td>abc</td><td>1</td></tr><tr><td>def</td><td>2</td></tr></table>"
+							);
+						}
+					}),
+
+					test("Таблица с источником данных в структуре", "Шаблоны", function(){
+						with(Clarino.simple){
+							var data = {
+								"John":22,
+								"Phill":33,
+								"George":44
+							};
+							assert(
+								table(
+									apply(data, function(val, nm){
+										return tr(
+											td(nm),
+											td(val)
+										);
+									})
+								),
+								"<table><tr><td>John</td><td>22</td></tr><tr><td>Phill</td><td>33</td></tr><tr><td>George</td><td>44</td></tr></table>"
+							);
+						}
+					}),
+
+					test("Нумерация", "Шаблоны", function(){
+						with(Clarino.simple){
+							var data = [{nm:"abc", nr:1}, {nm:"def", nr:2}];
+							assert(
+								div(
+									apply(data, function(el, i){
+										return p((i+1)+". "+el.nm);
+									})
+								),
+								"<div><p>1. abc</p><p>2. def</p></div>"
+							)
+						}
+					}),
+
+					test("Нумерация с разделителем", "Шаблоны", function(){
+						with(Clarino.simple){
+							var data = [{nm:"abc", nr:1}, {nm:"def", nr:2}];
+							assert(
+								div(
+									apply(data, function(el, i){
+										return span((i+1)+". "+el.nm);
+									}, ", ")
+								),
+								"<div><span>1. abc</span>, <span>2. def</span></div>"
+							)
+						}
+					}),
+
+					test("Нумерация с разделителем 2", "Шаблоны", function(){
+						with(Clarino.simple){
+							var data = [1, 2, null, 3, ""];
+							assert(
+								div(
+									apply(data, function(el, i){
+										if(el==3) return null;
+										return span(el);
+									}, ", ", true)
+								),
+								"<div><span>1</span>, <span>2</span></div>",
+								"Error 1"
+							)
+							assert(
+								div(
+									apply(data, function(el, i){
+										if(el==3) return null;
+										return span(el);
+									}, ", ", false)
+								),
+								"<div><span>1</span>, <span>2</span>, <span></span>, , <span></span></div>",
+								"Error 2"
+							)
+						}
+					}),
+
+					test("Итерация 1", "Шаблоны", function(){
+						with(Clarino.simple){
+							assert(
+								div(
+									repeat(2, function(i){
+										return span(i);
+									})
+								),
+								"<div><span>1</span><span>2</span></div>"
+							);
+						}
+					}),
+
+					test("Итерация 2", "Шаблоны", function(){
+						with(Clarino.simple){
+							assert(
+								div(
+									p("xyz"),
+									repeat(2, function(i){
+										return span(i);
+									}),
+									p("abc")
+								),
+								"<div><p>xyz</p><span>1</span><span>2</span><p>abc</p></div>"
+							);
+						}
+					}),
+
+					test("Итерация с разделителем", "Шаблоны", function(){
+						with(Clarino.simple){
+							assert(
+								div(
+									repeat(2, function(i){
+										return span(i);
+									}, ", ")
+								),
+								"<div><span>1</span>, <span>2</span></div>"
+							);
+						}
+					}),
+
+					test("format function", "Formatting", function(){ with(Clarino.simple){
+						assert(format("abc{0}def", 1), "abc1def");
+						assert(format("abc '{0}' def", 1), "abc '1' def");
+						assert(format("abc{0}def{1}xxx{2}yyy", 1, "abc", true), "abc1defabcxxxtrueyyy");
+					}}),
+
+					test('Entities function', 'Formatting', function(){with(Clarino.simple){
+						assert(entities('<p>xxx</p>'), '&lt;p&gt;xxx&lt;/p&gt;');
+						assert(entities('<p>xxx&yyy "aaa" \'b</p>'), '&lt;p&gt;xxx&amp;yyy &quot;aaa&quot; &apos;b&lt;/p&gt;');
+					}}),
+
+					test("callFunction function", "Formatting", function(){ with(Clarino.simple){
+						assert(callFunction("alert", 1), "alert(1)");
+						assert(callFunction("alert", "abc"), "alert('abc')");
+						assert(callFunction("alert", "ОАО \"Персей\""), "alert('ОАО \\\"Персей\\\"')");
+						assert(callFunction("alert", true), "alert(true)");
+						assert(callFunction("myFunction", 1, "abc", [1,2,3], {x:1, y:2, name:"abba"}), "myFunction(1,'abc',[1,2,3],{x:1,y:2,name:'abba'})");
+						assert(callFunction("clickLink", 12, "@this"), "clickLink(12,this)");
+						
+					}}),
+
+					test("callFunction function 2", "Formatting", function(){ with(Clarino.simple){
+						var idx = 1;
+						var id = 2;
+						var name="ОАО \"Персей\"";
+						assert(
+							span({"class":"TEditLinkButton", onclick:callFunction("action", idx, id, name)}, name),
+							"<span class=\"TEditLinkButton\" onclick=\"action(1,2,'ОАО \\\"Персей\\\"')\">ОАО \"Персей\"</span>"
+						);
+					}}),
+
+					test("JSON serialization", "Formatting", function(){ with(Clarino.simple){
+						assert(Clarino.json(1), "1", "Error 1.1");
+						assert(Clarino.json(11), "11", "Error 1.2");
+						
+						assert(Clarino.json(true), "true", "Error 2.1");
+						assert(Clarino.json(false), "false", "Error 2.2");
+						
+						assert(Clarino.json(""), "''", "Error 3.1");
+						assert(Clarino.json("abc def"), "'abc def'", "Error 3.1");
+						assert(Clarino.json("1234"), "'1234'", "Error 3.1");
+						
+						assert(Clarino.json(function(){}), "", "Error 4.1");
+						
+						assert(Clarino.json([]), "[]", "Error 5.1");
+						assert(Clarino.json([1]), "[1]", "Error 5.2");
+						assert(Clarino.json([1,2,"xx"]), "[1,2,'xx']", "Error 5.3");
+						assert(Clarino.json([1,2,{x:1,y:2}]), "[1,2,{x:1,y:2}]", "Error 5.4");
+					}}),
+
+					test("Style attribute", "Formatting", function(){ with(Clarino.simple){
+						var style = Clarino.formatStyle({
+							width:100,
+							color:"#f00"
+						});
+						assert(style, "width:100px;color:#f00");
+					}}),
+
+					test("Document type definition", "XML", function(){ with(Clarino.simple){
+						var xml = (function(){with(Clarino.getTagDefinitions("library;book")){
+							return library(
+								book({title:"Война и мир"}),
+								book({title:"Капитанская дочка"})
+							);
+						}})();
+						assert(xml, "<library><book title=\"Война и мир\"/><book title=\"Капитанская дочка\"/></library>");
+					}}),
+					test("Document type definition 2", "XML", function(){ with(Clarino.simple){
+						var xml = (function(){with(Clarino.getTagDefinitions(["library", "book"])){
+							return library(
+								book({title:"Война и мир"}),
+								book({title:"Капитанская дочка"})
+							);
+						}})();
+						assert(xml, "<library><book title=\"Война и мир\"/><book title=\"Капитанская дочка\"/></library>");
+					}}),
+
+					test("Tag Definitions", "Extensions", function(){ with(Clarino.simple){
+						Clarino.defineTags("ss;ssl");
+						var html = (function(){with(Clarino.html){
+							return ss(
+								ssl("abc"),
+								ssl("def"),
+								p("ghi")
+							);
+						}})();
+						assert(html, "<ss><ssl>abc</ssl><ssl>def</ssl><p>ghi</p></ss>");
+					}}),
+
+					test("Tag Definitions 2", "Extensions", function(){ with(Clarino.simple){
+						Clarino.defineTags(["ss", "ssl", "_interface"]);
+						var html = (function(){with(Clarino.html){
+							return ss(
+								ssl("abc"),
+								ssl("def"),
+								p("ghi"),
+								_interface("zz")
+							);
+						}})();
+						assert(html, "<ss><ssl>abc</ssl><ssl>def</ssl><p>ghi</p><interface>zz</interface></ss>");
+					}}),
+
+					test("Stylesheet", "Extensions", function(){
+						var sst = Clarino.css.stylesheet({
+							"body":{
+								"font-family":"Verdana",
+								fontSize:"12px",
+								" p":{
+									margin:0
+								}
+							}
+						});
+						assert(sst, "body{\nfont-family : Verdana ;\nfont-size : 12px ;\n}\nbody p{\nmargin : 0 ;\n}");
+					}),
+
+					test("Units", "Extensions", function(){
+						var px = Clarino.css.unit("px");
+						assert(px(22), "22px");
+						assert(px(3, 5, 10), "3px 5px 10px");
+						assert(Clarino.css.unit.px(22), '22px');
+						assert(Clarino.css.unit.pc(100), '100%');
+						assert(Clarino.css.unit.px(22, Clarino.css.keywords.auto), '22px auto');
+					}),
+
+					test("CSS Keywords", "Extensions", function(){
+						assert(Clarino.css.keywords.none, 'none');
+						assert(Clarino.css.keywords.absolute, 'absolute');
+					}),
+
+					test("CSS Rules", "Extensions", function(){
+						var anm = Clarino.css.rules('@keyframes example', {
+							from:{backgroundColor:'red'},
+							to:{backgroundColor:'green'}
+						});
+						
+						assert(anm, '@keyframes example{\nfrom{\nbackground-color : red ;\n}\nto{\nbackground-color : green ;\n}\n}');
+					})
+
 				))
 			);
 		}}
