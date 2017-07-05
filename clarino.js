@@ -311,7 +311,7 @@ var Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	var topVersion = "1.0.0";
+	var topVersion = "0.1.0";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
