@@ -163,6 +163,22 @@
 				:div({'class':'success'}, 'Test ', name, ' performed');
 		}}
 
+		function testSample(actionCode, expected){with($H){
+			errors = [];
+			var res = eval(actionCode);
+			assert(res, expected);
+
+			return markup(
+				p('Например, вызов ', code(actionCode), ' вернет строку ', code(expected), '.'),
+				errors.length?div({'class':'error'}, 
+					name, ' ',
+					$C.apply(errors, function(e){return div(e)})
+				)
+				:div({'class':'success'}, 'Test performed')
+
+			);
+		}}
+
 		var describedFields = {};
 
 		function referenceManual(prefix, root, doc, showRemaining){with($H){
@@ -556,7 +572,7 @@
 						referenceManual('Clarino', $C, {
 							tag: markup(
 								p('Создает фрагмент разметки с произвольным тегом. Функции передается имя тега, и массив размещаемых в нем значений.'),
-								p('Например, вызов ', code('Clarino.tag("a", ["abc"])'), ' вернет строку ', code('"<a>abc</a>"'), '.'),
+								testSample('Clarino.tag("a", ["abc"])', '<a>abc</a>'),
 								test(function(){
 									assert(Clarino.tag('a', ['abc']), '<a>abc</a>');
 								})
@@ -583,7 +599,7 @@
 							),
 							format: markup(
 								p('Форматирование строки со вставкой значений'),
-								p('Например, ', code('Clarino.format("abc{0}def{1}ghi", 1, 2)'), ' вернет строку ', code('"abc1def2ghi"'), '.'),
+								testSample('Clarino.format("abc{0}def{1}ghi", 1, 2)', 'abc1def2ghi'),
 								test("format function", "Formatting", function(){ with(Clarino.simple){
 									assert(format("abc{0}def", 1), "abc1def");
 									assert(format("abc '{0}' def", 1), "abc '1' def");
@@ -592,7 +608,7 @@
 							),
 							entities: markup(
 								p('Заменяет символы, не допустимые в HTML- или XML-разметке на соответствующие сущности (entity)'),
-								p('Например, ', code('Clarino.entities("a<b")'), ' вернет строку ', code('"a&lt;b"'), '.'),
+								testSample('Clarino.entities("a<b")', 'a&lt;b'),
 								test('Entities function', 'Formatting', function(){with(Clarino.simple){
 									assert(entities('a<b'), 'a&lt;b'),
 									assert(entities('<p>xxx</p>'), '&lt;p&gt;xxx&lt;/p&gt;');
@@ -602,7 +618,7 @@
 							callFunction: markup(
 								p('Формирует строку вызова функции для привязки обработчика события к HTML-элементу'),
 								p('При вызове передаются имя вызываемой функции, и список ее аргументов.'),
-								p('Например, вызов ', code('Clarino.callFunction("myFunction", 1, "abc", [1,2,3], {x:1, y:2, name:"abba"}),'), ' вернет строку ', code("myFunction(1,'abc',[1,2,3],{x:1,y:2,name:'abba'})"), '.'),
+								testSample('Clarino.callFunction("myFunction", 1, "abc", [1,2,3], {x:1, y:2, name:"abba"})', "myFunction(1,'abc',[1,2,3],{x:1,y:2,name:'abba'})"),
 								test("callFunction function", "Formatting", function(){ with(Clarino.simple){
 									assert(callFunction("alert", 1), "alert(1)");
 									assert(callFunction("alert", "abc"), "alert('abc')");
