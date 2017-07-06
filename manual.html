@@ -165,7 +165,8 @@
 
 		function testSample(actionCode, expected){with($H){
 			errors = [];
-			var res = eval(actionCode);
+			var F = new Function('return '+actionCode);
+			var res = F();
 			assert(res, expected);
 
 			return markup(
