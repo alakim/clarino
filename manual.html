@@ -665,21 +665,130 @@
 					)),
 					manualSection(3, 'Объявления', div(
 						referenceManual('Clarino', $C, {
-							defineTags: markup('Создает набор определений тегов'),
-							getTagDefinitions: markup('Создает набор определений тегов'),
+							defineTags: markup(
+								p('Создает дополительные определения тегов в разделе Clarino.html.'),
+								p('Получает строку, содержащую имена тегов, разделенных точкой с запятой. Если имя тега совпадает с зарезервированным словом JavaScript, имя такого тега должно предваряться символом подчеркивания.'),
+								test("Tag Definitions", "Extensions", function(){ with(Clarino.simple){
+									Clarino.defineTags("ss;ssl");
+									var html = (function(){with(Clarino.html){
+										return ss(
+											ssl("abc"),
+											ssl("def"),
+											p("ghi")
+										);
+									}})();
+									assert(html, "<ss><ssl>abc</ssl><ssl>def</ssl><p>ghi</p></ss>");
+									delete Clarino.html.ssl;
+									delete Clarino.html.ss;
+									delete Clarino.html._interface;
+								}}),
+
+								test("Tag Definitions 2", "Extensions", function(){ with(Clarino.simple){
+									Clarino.defineTags(["ss", "ssl", "_interface"]);
+									var html = (function(){with(Clarino.html){
+										return ss(
+											ssl("abc"),
+											ssl("def"),
+											p("ghi"),
+											_interface("zz")
+										);
+									}})();
+									assert(html, "<ss><ssl>abc</ssl><ssl>def</ssl><p>ghi</p><interface>zz</interface></ss>");
+									delete Clarino.html.ssl;
+									delete Clarino.html.ss;
+									delete Clarino.html._interface;
+								}}),
+							),
+							getTagDefinitions: markup(
+								p('Возвращает набор определений тегов. Работает аналогично методу Clarino.defineTags.'),
+								test("Document type definition", "XML", function(){ with(Clarino.simple){
+									var xml = (function(){with(Clarino.getTagDefinitions("library;book")){
+										return library(
+											book({title:"Война и мир"}),
+											book({title:"Капитанская дочка"})
+										);
+									}})();
+									assert(xml, "<library><book title=\"Война и мир\"/><book title=\"Капитанская дочка\"/></library>");
+								}}),
+								test("Document type definition 2", "XML", function(){ with(Clarino.simple){
+									var xml = (function(){with(Clarino.getTagDefinitions(["library", "book"])){
+										return library(
+											book({title:"Война и мир"}),
+											book({title:"Капитанская дочка"})
+										);
+									}})();
+									assert(xml, "<library><book title=\"Война и мир\"/><book title=\"Капитанская дочка\"/></library>");
+								}})
+							),
 							symbols: markup('Создает структуру для хранения строковых констант')
 						})
 					)),
 					manualSection(3, 'CSS', div(
 						referenceManual('Clarino.css', $C.css, {
-							// writeStylesheet: false,
+							stylesheet: markup(
+								p('Формирует фрагмент CSS-кода. Получает JSON-структуру, содержащую описание стилей. Возвращает соответствующий CSS-код.'),
+								p('Пример входной структуры:'),
+								codesample([
+									'"body":{',
+									'	"font-family":"Verdana"',
+									'	fontSize: "12px"',
+									'	" p":{',
+									'		margin: 0',
+									'	}',
+									'}'
+								]),
+								p('Общие правила:'),
+								ul(
+									li('Если значение атрибута является объектом, то соответствующий ключ (имя атрибута) содержит CSS-селектор.'),
+									li('Если значение атрибута строка или число, то ключ является именем CSS-свойства. Если имя свойства содержит дефис, то допускается для сокращения записывать это имя слитно без дефисов, начиная каждую часть имени с заглавной буквы (см. пример выше)'),
+									li('Вложенные селекторы конкатенируются. Так в приведенном выше примере из селекторов ', code('body'), ' и ', code(' p'), ' будет составлен селектор ', code(' "body p"'), '. В данном случае важен пробел перед вторым селектором.'),
+								),
+								test("Stylesheet", "Extensions", function(){
+									var sst = Clarino.css.stylesheet({
+										"body":{
+											"font-family":"Verdana",
+											fontSize:"12px",
+											" p":{
+												margin:0
+											}
+										}
+									});
+									assert(sst, "body{\nfont-family : Verdana ;\nfont-size : 12px ;\n}\nbody p{\nmargin : 0 ;\n}");
+								})
+							),
+							writeStylesheet: markup('Формирует строку CSS-кода с помощью метода ', code('Clarino.css.stylesheet'), ', и выводит ее в поток загружаемого документа.'),
+							unit: markup(
+								p('Формирует метод для форматирования единиц измерения'),
+								test("Units", "Extensions", function(){
+									var px = Clarino.css.unit("px");
+									assert(px(22), "22px");
+									assert(px(3, 5, 10), "3px 5px 10px");
+									assert(Clarino.css.unit.px(22), '22px');
+									assert(Clarino.css.unit.pc(100), '100%');
+									assert(Clarino.css.unit.px(22, Clarino.css.keywords.auto), '22px auto');
+								})
+							),
+							keywords: markup(
+								p('Объект, содержащий строковые константы, соответствующие ключевым словам CSS.'),
+								test("CSS Keywords", "Extensions", function(){
+									assert(Clarino.css.keywords.none, 'none');
+									assert(Clarino.css.keywords.absolute, 'absolute');
+								})
+							),
+							rules: markup(
+								p('Формирует код CSS-правил'),
+								test("CSS Rules", "Extensions", function(){
+									var anm = Clarino.css.rules('@keyframes example', {
+										from:{backgroundColor:'red'},
+										to:{backgroundColor:'green'}
+									});
+									
+									assert(anm, '@keyframes example{\nfrom{\nbackground-color : red ;\n}\nto{\nbackground-color : green ;\n}\n}');
+								})
+							)
 							// writeRules: false,
-							// rules: false,
 							// attributes: false,
-							// stylesheet: false,
 							// writeStylesheet: false,
-							// unit: false,
-							// keywords: false
 						})
 					)),
 					referenceManual('Clarino', $C, {
@@ -705,95 +814,8 @@
 					referenceManual('Clarino.html', $C.html, {}, true),
 					// referenceManual('Clarino.simple', $H, {}, true),
 					referenceManual('Clarino.css', $C.css, {}, true)
-				)),
-				manualSection(1, 'Общие тесты', div(
-
-
-
-
-
-
-					test("Document type definition", "XML", function(){ with(Clarino.simple){
-						var xml = (function(){with(Clarino.getTagDefinitions("library;book")){
-							return library(
-								book({title:"Война и мир"}),
-								book({title:"Капитанская дочка"})
-							);
-						}})();
-						assert(xml, "<library><book title=\"Война и мир\"/><book title=\"Капитанская дочка\"/></library>");
-					}}),
-					test("Document type definition 2", "XML", function(){ with(Clarino.simple){
-						var xml = (function(){with(Clarino.getTagDefinitions(["library", "book"])){
-							return library(
-								book({title:"Война и мир"}),
-								book({title:"Капитанская дочка"})
-							);
-						}})();
-						assert(xml, "<library><book title=\"Война и мир\"/><book title=\"Капитанская дочка\"/></library>");
-					}}),
-
-					test("Tag Definitions", "Extensions", function(){ with(Clarino.simple){
-						Clarino.defineTags("ss;ssl");
-						var html = (function(){with(Clarino.html){
-							return ss(
-								ssl("abc"),
-								ssl("def"),
-								p("ghi")
-							);
-						}})();
-						assert(html, "<ss><ssl>abc</ssl><ssl>def</ssl><p>ghi</p></ss>");
-					}}),
-
-					test("Tag Definitions 2", "Extensions", function(){ with(Clarino.simple){
-						Clarino.defineTags(["ss", "ssl", "_interface"]);
-						var html = (function(){with(Clarino.html){
-							return ss(
-								ssl("abc"),
-								ssl("def"),
-								p("ghi"),
-								_interface("zz")
-							);
-						}})();
-						assert(html, "<ss><ssl>abc</ssl><ssl>def</ssl><p>ghi</p><interface>zz</interface></ss>");
-					}}),
-
-					test("Stylesheet", "Extensions", function(){
-						var sst = Clarino.css.stylesheet({
-							"body":{
-								"font-family":"Verdana",
-								fontSize:"12px",
-								" p":{
-									margin:0
-								}
-							}
-						});
-						assert(sst, "body{\nfont-family : Verdana ;\nfont-size : 12px ;\n}\nbody p{\nmargin : 0 ;\n}");
-					}),
-
-					test("Units", "Extensions", function(){
-						var px = Clarino.css.unit("px");
-						assert(px(22), "22px");
-						assert(px(3, 5, 10), "3px 5px 10px");
-						assert(Clarino.css.unit.px(22), '22px');
-						assert(Clarino.css.unit.pc(100), '100%');
-						assert(Clarino.css.unit.px(22, Clarino.css.keywords.auto), '22px auto');
-					}),
-
-					test("CSS Keywords", "Extensions", function(){
-						assert(Clarino.css.keywords.none, 'none');
-						assert(Clarino.css.keywords.absolute, 'absolute');
-					}),
-
-					test("CSS Rules", "Extensions", function(){
-						var anm = Clarino.css.rules('@keyframes example', {
-							from:{backgroundColor:'red'},
-							to:{backgroundColor:'green'}
-						});
-						
-						assert(anm, '@keyframes example{\nfrom{\nbackground-color : red ;\n}\nto{\nbackground-color : green ;\n}\n}');
-					})
-
 				))
+				// manualSection(1, 'Общие тесты', div())
 			);
 		}}
 
