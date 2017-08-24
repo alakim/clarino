@@ -770,10 +770,10 @@
 							),
 							keywords: markup(
 								p('Объект, содержащий строковые константы, соответствующие ключевым словам CSS.'),
-								test("CSS Keywords", "Extensions", function(){
-									assert(Clarino.css.keywords.none, 'none');
-									assert(Clarino.css.keywords.absolute, 'absolute');
-								})
+								p('Доступ к константам осуществляется по ключу, совпадающему с требуемым строковым значением. Если строковое значение содержит дефис, то при формировании ключа он опускается, а следующая за ним буква заменяется на заглавную.'),
+								testSample('Clarino.css.keywords.none', 'none'),
+								testSample('Clarino.css.keywords.absolute', 'absolute'),
+								testSample('Clarino.css.keywords.spaceBetween', 'space-between')
 							),
 							rules: markup(
 								p('Формирует код CSS-правил'),

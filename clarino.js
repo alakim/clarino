@@ -279,11 +279,17 @@ var Clarino = (function(){
 
 	Clarino.symbols = function(str){
 		var res = {}, c=str.split(';');
-		for(var s,i=0; s=c[i],i<c.length; i++) res[s] = s;
+		for(var s,i=0; s=c[i],i<c.length; i++){
+			var sVal = s.replace(/[A-Z]/g, function(v){
+				// console.log(v);
+				return '-'+v.toLowerCase();
+			});
+			res[s] = sVal;
+		}
 		return res;
 	};
 
-	Css.keywords = Clarino.symbols('block;none;flex;row;column;left;right;center;hidden;pointer;bold;normal;uppercase;lowercase;absolute;relative;underline;auto;collapse;separate;dotted;inherit;inline;default;solid;');
+	Css.keywords = Clarino.symbols('block;none;flex;row;rowReverse;column;columnReverse;left;right;center;hidden;pointer;bold;normal;uppercase;lowercase;absolute;relative;underline;auto;collapse;separate;dotted;inherit;inline;default;solid;wrap;nowrap;wrapReverse;spaceBetween;spaceAround;spaceEvently;flexStart;flexEnd;baseline;stretch');
 	
 	function compareVersions(v1, v2){
 		if(v1==v2) return 0;
@@ -311,7 +317,7 @@ var Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	var topVersion = "0.1.0";
+	var topVersion = "0.1.1";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
