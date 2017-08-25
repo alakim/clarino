@@ -140,7 +140,7 @@ var Clarino = (function(){
 		
 		formatStyle: function(){
 			function addUnits(nm, val){
-				if((nm=="width"||nm=="height"||nm=="top"||nm=="left")&&typeof(val)=="number") return val+"px";
+				if((nm=="width"||nm=="height"||nm=="top"||nm=="left"||nm=='font-size')&&typeof(val)=="number") return val+"px";
 				return val;
 			}
 			
@@ -150,7 +150,11 @@ var Clarino = (function(){
 			}
 			var r = [];
 			for(var k in s){
-				r.push(k+":"+addUnits(k, s[k]));
+				var kk = k.replace(/([A-Z])/g, function(v){
+					//console.log(v);
+					return '-'+v.toLowerCase();
+				});
+				r.push(kk+":"+addUnits(kk, s[k]));
 			}
 			return r.join(";");
 		},
@@ -317,7 +321,7 @@ var Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	var topVersion = "0.1.1";
+	var topVersion = "0.1.2";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
