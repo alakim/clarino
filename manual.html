@@ -10,6 +10,8 @@
 	(function($, $C){
 		//console.log($C);
 		var $H = $C.simple;
+		var showTests = document.location.hash=='#test';
+		// console.log('showTests: %s', showTests);
 
 		var px = $C.css.unit.px,
 			pc = $C.css.unit.pc,
@@ -160,7 +162,7 @@
 					name, ' ',
 					$C.apply(errors, function(e){return div(e)})
 				)
-				:div({'class':'success'}, 'Test ', name, ' performed');
+				:showTests?div({'class':'success'}, 'Test ', name, ' performed'):null;
 		}}
 
 		function testSample(actionCode, expected){with($H){
@@ -175,7 +177,7 @@
 					name, ' ',
 					$C.apply(errors, function(e){return div(e)})
 				)
-				:div({'class':'success'}, 'Test performed')
+				:showTests?div({'class':'success'}, 'Test performed'):null
 
 			);
 		}}
@@ -787,15 +789,18 @@
 									
 									assert(anm, '@keyframes example{\nfrom{\nbackground-color : red ;\n}\nto{\nbackground-color : green ;\n}\n}');
 								})
+							),
+							writeRules: markup(
+								p('Записывает CSS-правила, сформированные методом ', code('Clarino.css.rules()', ' в поток вывода документа'))
+							),
+							attributes: markup(
+								p('Словарь для определения сокращенных названий CSS-атрибутов. Ключ - сокращенное название атрибута, для использования в методах', code('Clarino.css.stylesheet()'), ' и ', code('Clarino.css.writeStylesheet()'), '. Значение - стандартное имя CSS-атрибута, которое будет вставлено в формируемый CSS-код.')
 							)
-							// writeRules: false,
-							// attributes: false,
-							// writeStylesheet: false,
 						})
 					)),
 					referenceManual('Clarino', $C, {
 						compareVersions:markup(
-							p('Сравнивает номера версий. Возвращает 0, если номера одинаковые, 1, если первый номер больше, и -1, если второй номер больше.['),
+							p('Сравнивает номера версий. Возвращает 0, если номера одинаковые, 1, если первый номер больше, и -1, если второй номер больше.'),
 							test("compareVersions", "Configuration", function(){
 								assert(Clarino.compareVersions("1.2.3", "1.2.3"), 0);
 								assert(Clarino.compareVersions("2.2.3", "1.2.3"), 1);
