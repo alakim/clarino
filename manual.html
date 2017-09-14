@@ -674,7 +674,35 @@
 					manualSection(3, 'Форматироване XML', markup(
 						p('Библиотека Clariono может быть использована также для создания фрагментов XML-кода. В общих чертах, используется такой же подход, как и к обычной HTML-верстке. Отличие заключается лишь в том, что требуется создание определений для новых тегов.'),
 						p('Для объявления новых тегов используется метод ', a({href:'#clarino_gettagdefinitions'}, 'Clarino.getTagDefinitions()'), '.'),
-						p('Например, для создания XML-документа ', code('<person><name>John</name><phone>444-44-44</phone></person>'), ' требуется создать следующее определение тегов: ', code('Clarino.getTagDefinitions("person;name;phone")'), '. Полученный объект будет содержать методы ', code('person()'), ', ', code('name()'), ', и ', code('phone()'), ', реализующие форматирование тегов аналогично с рассмотренными выше тегами HTML')
+						(function(){
+							var defCode = 'Clarino.getTagDefinitions("person;name;phone")';
+							var xDef = (new Function('return '+defCode))();
+							var xCode = (function(){with(xDef){
+								return person(
+									name('John'), phone('444-44-44')
+								);
+							}})();
+							var cnt = 0;
+							var methodSet = apply(xDef, function(v, nm){
+								return markup(
+									2==cnt++?'и ':null,
+									code(nm+'()')
+								);
+							}, ', ');
+							return markup(
+								test(function(){
+									assert(typeof(xDef.person), 'function');
+									assert(typeof(xDef.name), 'function');
+									assert(typeof(xDef.phone), 'function');
+									assert(cnt, 3);
+								}),
+								p(
+									'Например, для создания XML-документа ', code(xCode), ' требуется создать следующее определение тегов: ',
+									code(defCode), '. Полученный объект будет содержать методы ', methodSet, 
+									', реализующие форматирование тегов аналогично с рассмотренными выше тегами HTML.'
+								)
+							);
+						})()
 					))
 				)),
 				manualSection(2, 'Справочник', markup(
