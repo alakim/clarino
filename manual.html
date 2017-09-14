@@ -56,6 +56,18 @@
 					backgroundColor: '#eaeaea',
 					fontFamily: 'Courier New, Monospace'
 				},
+				' .attention':{
+					color: '#f00'
+				},
+				' div.attention':{
+					margin: px(5),
+					color: '#000',
+					padding: px(0, 10),
+					borderLeft: '8px solid #f00'
+				},
+				' .comment':{
+					fontStyle: css.italic
+				},
 				' .pnlErrorsDetected':{
 					display: css.none,
 					backgroundColor: '#ffc',
@@ -75,9 +87,24 @@
 			};
 		})();
 
-		function manualSection(level, sectTitle, content){with($H){
+		function listOfMethods(obj){with($H){
+			var list = [];
+			for(var k in obj){
+				list.push(k);
+			}
+			list.sort();
+			return markup(
+				apply(list, function(nm){
+					return nm;
+				}, ', ')
+			);
+		}}
+
+		function manualSection(level, sectTitle, refID, content){with($H){
+			if(arguments.length==3){content = refID; refID = null;}
 			return div({'class':'section'},
 				a({name:'s'+uid()}),
+				refID?a({name:refID}):null,
 				$H['h'+level]({'class':'title'}, sectTitle),
 				div({'class':'navbar'},
 					a({'href':'#toc', title:'К оглавлению'}, '&#x2261'), ' ',
@@ -97,6 +124,14 @@
 
 		function code(str){
 			return $H.span({'class':'code'}, $C.entities(str));
+		}
+
+		function attention(str){
+			return $H.div({'class':'attention'}, str);
+		}
+
+		function comment(str){
+			return $H.div({'class':'comment'}, str);
 		}
 
 		var errorsDetected = false,
@@ -122,6 +157,7 @@
 			if(!equals(val, expected)){
 				errorsDetected = true;
 				errors.push('Assertion failed: expected "'+$C.entities(expected)+'", but was "'+$C.entities(val)+'"');
+				console.log('Assertion failed: expected %o, but was %o', expected, val);
 			}
 		}
 
@@ -220,299 +256,450 @@
 				a({name:'toc'}),
 				div({'class':'pnlToc'}),
 				manualSection(2, 'Назначение', div(
-					p('Программный модуль Clarino предназначен для формирования фрагментов HTML-, XML-, и CSS-кода.')
+					p('При создании динамических HTML-страничек часто возникает необходимость формирования фрагментов HTML-кода. Попытки решить задачу простой конкатенацией строк даже при небольшом объеме формируемого кода часто заканчиваются неудачей из-за сложности написания, и, тем более, поддержки и модификации полученного кода.'),
+					p('Существует множество фреймворков, предлагающих различные механизмы шаблонизации, облегчающие данную задачу. Вместе с тем, у подобных решений имеется ряд недостатков:'),
+					ul(
+						li('часто использование фреймворка требует полного изменения архитектуры уже существующего веб-приложения, что не всегда возможно;'),
+						li('используемый фреймворком язык шаблонизации порой оказывается достаточно примитивным, и реализация достаточно сложных шаблонов оказывается довольно громоздкой.')
+					),
+					p('Предлагаемый программный модуль Clarino предназначен для формирования фрагментов HTML-, XML-, и CSS-кода на основе шаблонов, полностью написанных на языке JavaScript.'),
+					p('Преимуществами данного решения являются:'),
+					ul(
+						li('компактность данной библиотеки;'),
+						li('независимость от сторонних библиотек;'),
+						li('легкая интеграция в существующие веб-приложения;'),
+						li('возможность использования всех языковых средств JavaScript при создании шаблонов;'),
+						li('исключаются многие ошибки при создании шаблонов, связанные с незакрытыми, или "перекрестными" тегами;'),
+						li('быстрый старт - нет необходимости изучать новый язык шаблонизации;'),
+						li('расширяемость - при необходимости можно дополнять модуль своими определениями;'),
+						li('быстродействие - как показал многолетний опыт, использование данного подхода не вызывает проблем даже на очень слабых машинах и очень старых браузерах.')
+					)
 				)),
-				manualSection(2, 'Подключение', div(
-					p('Для использования библиотеки Clarino достаточно подключить её к веб-странице:'),
-					codesample(['<scr'+'ipt src="clarino.js"></sc'+'ript>']),
-					test("Подключение модуля Clarino", "Configuration", function(){
-						assert(typeof(Clarino), "object");
-					}),
-					p('Получение номера версии:'),
-					codesample(['Clarino.version()']),
-					test(function(){
-						assertTrue(Clarino.version().match(/\d+\.\d+\.\d+/)!=null);
-					}),
-					p('Доступ к интерфейсу заданной версии:'),
-					codesample('Clarino.version("1.0.0")'),
-					test(function(){
-						assertTrue(typeof(Clarino.version('0.0.0').version)=='function');
-						assertTrue(typeof(Clarino.version('0.0.0').apply)=='function');
-					}),
-				)),
-				manualSection(2, 'Простая верстка', div(
-					test("Простая верстка", "Верстка", function(){
-						with(Clarino.simple){
-							assert(
-								div(
-									p("abc"),
-									p("def")
-								),
-								"<div><p>abc</p><p>def</p></div>"
-							);
-						}
-					}),
+				manualSection(2, 'Использование', 'usage', markup(
+					manualSection(3, 'Подключение', div(
+						p('Для использования библиотеки Clarino достаточно подключить её к веб-странице:'),
+						codesample(['<scr'+'ipt src="clarino.js"></sc'+'ript>']),
+						test("Подключение модуля Clarino", "Configuration", function(){
+							assert(typeof(Clarino), "object");
+						}),
+						p('Для обеспечения обратной совместимости в модуле предусмотрена проверка текущей версии. Чтобы указать минимальный номер версии, обеспечивающий работу пользовательского кода, следует вызвать метод ', code('Clarino.version()'), ' передав в него минимальный номер версии. Например, так:'),
+						codesample('Clarino.version("1.0.2")'),
+						test(function(){
+							assertTrue(typeof(Clarino.version('0.0.0').version)=='function');
+							assertTrue(typeof(Clarino.version('0.0.0').apply)=='function');
+						}),
+						p('Если подключенная библиотека Clarino поддерживает такую версию, то этот метод возвратит объект, реализующий интерфейс библиотеки заданной версии. В случае, если подключена слишком старая версия библиотеки, в консоль браузера будет выдано сообщение об ошибке.'),
+						p('Для получения номера текущей версии библиотеки надо вызвать метод ', code('Clarino.version()'),' без аргументов:'),
+						codesample(['Clarino.version()']),
+						test(function(){
+							assertTrue(Clarino.version().match(/\d+\.\d+\.\d+/)!=null);
+						})
+					)),
+					manualSection(3, 'Простая верстка', div(
+						p('Для формирования фрагментов HTML-кода в разделе ', code('Clarino.html'), ' имеются методы, соответствующие HTML-тегам, определенным в стандарте HTML5. Каждый из этих методов преобразует все переданные ему значения в строки, конкатенирует эти строки, и заключает их в соответствующий тег HTML5.'),
+						testSample('Clarino.html.p("abc", "def")', '<p>abcdef</p>'),
+						p('Для удобства, чтобы не указывать каждый раз имя раздела ', code('Clarino.html'), ', можно использовать конструкцию ', code('with(Clarino.html){....}'), '.'),
+						p('Если используется режим ', code("'use strict'"), ', следует использовать деструктуризацию, например: ', code('let {div, p, span} = Clarino.html;'), '.'),
+						p('Вот пример функции, возвращающей HTML-код со вложенными тегами:'),
+						codesample([
+							'function(){with(Clarino.html){',
+							'	return div(',
+							'		p("abc"),',
+							'		p("def")',
+							'	);',
+							'}}'
+						]),
+						test("Простая верстка", "Верстка", function(){
+							with(Clarino.simple){
+								assert(
+									div(
+										p("abc"),
+										p("def")
+									),
+									"<div><p>abc</p><p>def</p></div>"
+								);
+							}
+						}),
 
-					test("Простая верстка с атрибутами", "Верстка", function(){
-						with(Clarino.simple){
-							assert(
-								div({
-										"class":"panel",
-										width:200
-									},
-									p("abc")
-								),
-								"<div class=\"panel\" width=\"200\"><p>abc</p></div>"
-							);
-						}
-					}),
+						p('Для указания атрибутов HTML-тегов следует в числе аргументов передать объект, атрибуты и значения которого соответствуют требуемым HTML-атрибутам и их значениям:'),
+						codesample([
+							'function(){with(Clarino.html){',
+							'	return div({"class":"test", id:"test1"},',
+							'		p("abc"),',
+							'		p("def")',
+							'	);',
+							'}}'
+						]),
+						attention(markup('В приведенном примере имя атрибута ', code('class'), ' совпадает с зарезервированным ключевым словом JavaScript, поэтому оно обязательно должно быть заключено в кавычки.')),
+						test("Простая верстка с атрибутами", "Верстка", function(){
+							with(Clarino.simple){
+								assert(
+									div({
+											"class":"panel",
+											width:200
+										},
+										p("abc")
+									),
+									"<div class=\"panel\" width=\"200\"><p>abc</p></div>"
+								);
+							}
+						}),
 
-					test("Простая таблица", "Верстка", function(){
-						with(Clarino.simple){
-							assert(
-								table({border:0, cellpadding:0, cellspacing:0},
-									tr(td("11"), td("12")),
-									tr(td("21"), td("22"))
-								),
-								"<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr><td>11</td><td>12</td></tr><tr><td>21</td><td>22</td></tr></table>"
-							);
-						}
-					}),
+						test("Простая таблица", "Верстка", function(){
+							with(Clarino.simple){
+								assert(
+									table({border:0, cellpadding:0, cellspacing:0},
+										tr(td("11"), td("12")),
+										tr(td("21"), td("22"))
+									),
+									"<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\"><tr><td>11</td><td>12</td></tr><tr><td>21</td><td>22</td></tr></table>"
+								);
+							}
+						}),
 
-					test("Таблица с пустыми ячейками", "Верстка", function(){
-						with(Clarino.simple){
-							assert(
-								table(
-									tr(th("ss"), th("  ")),
-									tr(td("11"), td("   ")),
-									tr(td(), td("22"))
-								),
-								"<table><tr><th>ss</th><th>&nbsp;</th></tr><tr><td>11</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>22</td></tr></table>"
-							)
-						}
-					}),
+						test("Таблица с пустыми ячейками", "Верстка", function(){
+							with(Clarino.simple){
+								assert(
+									table(
+										tr(th("ss"), th("  ")),
+										tr(td("11"), td("   ")),
+										tr(td(), td("22"))
+									),
+									"<table><tr><th>ss</th><th>&nbsp;</th></tr><tr><td>11</td><td>&nbsp;</td></tr><tr><td>&nbsp;</td><td>22</td></tr></table>"
+								)
+							}
+						}),
 
-					test("Картинки", "Верстка", function(){
-						with(Clarino.simple){
-							assert(
-								div(
-									hr(),
-									img({src:"null.gif", width:"10px"}),
-									br(),
-									p("abc")
-								),
-								"<div><hr/><img src=\"null.gif\" width=\"10px\"/><br/><p>abc</p></div>"
-							);
-						}
-					}),
+						test("Картинки", "Верстка", function(){
+							with(Clarino.simple){
+								assert(
+									div(
+										hr(),
+										img({src:"null.gif", width:"10px"}),
+										br(),
+										p("abc")
+									),
+									"<div><hr/><img src=\"null.gif\" width=\"10px\"/><br/><p>abc</p></div>"
+								);
+							}
+						}),
 
-					test("tagCollection", "Верстка", function(){
-						with(Clarino.simple){
-							assert(
-								markup(
-									div("abc"),
-									"def",
-									div("ghi")
-								),
-								"<div>abc</div>def<div>ghi</div>"
-							);
-						}
-					}),
-					
-					test("Arbitrary Attributes", "Верстка", function(){
-						with(Clarino.simple){
-							var b = true;
-							assert(
-								div({width:4},
-									b?{height:5}:null,
-									!b?{"z-index":3}:null,
-									"xxx"
-								),
-								"<div width=\"4\" height=\"5\">xxx</div>"
-							);
-						}
-					}),
+						p('Для формирования фрагмента HTML-кода, не окруженного никаким тегом, предусмотрен метод ', code('Clarino.markup'), ':'),
+						codesample([
+							'Clarino.markup(',
+							'	"my photo: "',
+							'	Clarino.html.img({src:"photo.jpg"})',
+							')'
+						]),
+						test("tagCollection", "Верстка", function(){
+							with(Clarino.simple){
+								assert(
+									markup(
+										div("abc"),
+										"def",
+										div("ghi")
+									),
+									"<div>abc</div>def<div>ghi</div>"
+								);
+							}
+						}),
+						
+						p('При необходимости включения фрагментов верстки по условиям следует использовать условный (тернарный) оператор ', code('condition ? expr1 : expr2'), ' , например:'),
+						codesample([
+							'function(attention){with($Clarino.html){',
+							'	return div(',
+							'		attention?{style:"color:red;"}:null,',
+							'		"This is ",',
+							'		attention?"an important":"a",',
+							'		" message"',
+							'	);',
+							'}}'
+						]),
+						p('В приведенном примере, в зависимости от значения параметра ', code('attention'), ' при вызове функции будет сформирован следующий код: '),
+						ul(
+							li(code('<div style="color:red;">This is an important message</div>'), ', если ', code('attention==true')),
+							li(code('<div>This is a message</div>'), ', если ', code('attention==false')),
+						),
+						attention(markup('При формировании HTML-кода значение ', code('null'), ' преобразуется в пустую строку.')),
+						test("Arbitrary Attributes", "Верстка", function(){
+							with(Clarino.simple){
+								var b = true;
+								assert(
+									div({width:4},
+										b?{height:5}:null,
+										!b?{"z-index":3}:null,
+										"xxx"
+									),
+									"<div width=\"4\" height=\"5\">xxx</div>"
+								);
+							}
+						}),
+						p('При создании простой HTML-верстки могут оказаться полезными вспомогательные методы, описанные в разделе ', a({href:'#formatting'}, 'Форматирование'), ', обеспечивающие простое форматирование значений атрибутов, стилей, и т.п.')
+					)),
+					manualSection(3, 'Структуры данных и шаблонизация', markup(
+						p('При создании фрагментов HTML-верстки, отображающих сложные структуры данных (массивы или объекты), необходимо использование функций ', a({href:'#templating'}, 'шаблонизации'),'.'),
+						attention(markup('Для удобства доступа к фукнциям шаблонизации одновременно с часто используемыми тегами HTML предусмотрен специальный ', a({href:'#divisions'}, 'раздел'), ' библиотеки ', code('Clarino.simple'), ', включающий в себя функции шаблонизации, форматирования, а также основные теги HTML.')),
+						p('Основной функцией для отображения структур данных является ', a({href:'#clarino_apply'}, ' функция ', 'Clarino.apply()'), '. Функция получает исходную структуру данных, а также функцию-шаблон, применяемую к каждому элементу структуры. Если структура является массивом, в шаблон передается каждый его элемент. Если структура является объектом, в шаблон передаются значение и имя каждого из атрибутов данного объекта. Если исходный объект кроме атрибутов имеет также методы, эти методы игнорируются.'),
+						p('Результаты применения шаблона ко всем элементам исходной структуры соединяются в единую строку. Если требуется разделитель, его можно указать третьим аргументом функции.'),
+						p('Допустим, имеется следующая структура данных:'),
+						codesample([
+							'var db = [',
+							'	{name:"John", phone:"444-44-44"},',
+							'	{name:"Phill", phone:"222-22-22"},',
+							'	{name:"James", phone:"333-33-33"}',
+							'];'
+						]),
+						p('Тогда для вывода этих данных в виде таблицы можно использовать следующую функцию:'),
+						codesample([
+							'function(db){with(Clarino.simple){',
+							'	return table(',
+							'		tr(',
+							'			th("#"),',
+							'			th("Name"),',
+							'			th("Phone")',
+							'		),',
+							'		apply(db, function(el, i){',
+							'			return tr(',
+							'				td(i+1),',
+							'				td(el.name),',
+							'				td(el.phone)',
+							'			);',
+							'		})',
+							'	);',
+							'}}'
+						]),
+						p('В первой строке данной таблицы выводятся заголовки столбцов, далее следуют строки, соответствующие элементам исходного массива. В первой колонке выводится порядковый номер, во второй имя, а в третьей - телефонный номер.'),
+						p('В случае использования "строгого режима" Javascript ("use strict") следует вместо конструкции ', code('with()'), ' использовать деструктуризацию:'),
+						codesample([
+							'function(db){',
+							'	let {table, tr, th, td} = Clarino.simple;',
+							'	return table(',
+							'		tr(',
+							'			th("#"),',
+							'			th("Name"),',
+							'			th("Phone")',
+							'		),',
+							'		apply(db, function(el, i){',
+							'			return tr(',
+							'				td(i+1),',
+							'				td(el.name),',
+							'				td(el.phone)',
+							'			);',
+							'		})',
+							'	);',
+							'}'
+						]),
+						comment(markup('Если в шаблоне используется очень много разнообразных тегов, нет смысла перечислять их все в выражении деструктуризации - достаточно указать там только наиболее употребительные, а остальные при необходимости указывать через их полное имя.')),
+						p('В следующем примере представлена функция, формирующая таблицу квадратов чисел от 1 до 10:'),
+						codesample([
+							'function(){with(Clarino.simple){',
+							'	return table(',
+							'		tr(',
+							'			th("x"),',
+							'			th("x",  Clarino.html.sup("2"))',
+							'		),',
+							'		repeat(10, function(x){',
+							'				return tr(',
+							'					td(x),',
+							'					td(x*x)',
+							'				);',
+							'		})',
+							'	);',
+							'}}'
+						]),
+						p('В данном примере кроме тегов из раздела ', code('Clarino.simple'), ' используется довольно редкий тег ', code('sup'), ', расположенный в разделе ', code('Clarino.html'), '.'),
+						p('Для работы с шаблоном используется функция ', code('repeat()'), ', применяющая шаблон заданное число раз.'),
+						p('В первой строке таблицы выводятся, как обычно, названия столбцов, в остальных - пары значений (исходное число и его квадрат).'),
+						test("Таблица", "Шаблоны", function(){
+							with(Clarino.simple){
+								var data = [{nm:"abc", nr:1}, {nm:"def", nr:2}];
+								assert(
+									table(
+										apply(data, function(el){
+											return tr(td(el.nm), td(el.nr))
+										})
+									),
+									"<table><tr><td>abc</td><td>1</td></tr><tr><td>def</td><td>2</td></tr></table>"
+								);
+							}
+						}),
 
-					test("Таблица", "Шаблоны", function(){
-						with(Clarino.simple){
-							var data = [{nm:"abc", nr:1}, {nm:"def", nr:2}];
-							assert(
-								table(
-									apply(data, function(el){
-										return tr(td(el.nm), td(el.nr))
-									})
-								),
-								"<table><tr><td>abc</td><td>1</td></tr><tr><td>def</td><td>2</td></tr></table>"
-							);
-						}
-					}),
+						test("Таблица с раскрашенными строками", "Шаблоны", function(){
+							with(Clarino.simple){
+								var data = [{nm:"abc", nr:1}, {nm:"def", nr:2}, {nm:"ghi", nr:3}];
+								assert(
+									table(
+										apply(data, function(el, i){
+											return tr(i%2?null:{"class":"even"},
+												td(el.nm), td(el.nr)
+											)
+										})
+									),
+									"<table><tr class=\"even\"><td>abc</td><td>1</td></tr><tr><td>def</td><td>2</td></tr><tr class=\"even\"><td>ghi</td><td>3</td></tr></table>"
+								);
+							}
+						}),
 
-					test("Таблица с раскрашенными строками", "Шаблоны", function(){
-						with(Clarino.simple){
-							var data = [{nm:"abc", nr:1}, {nm:"def", nr:2}, {nm:"ghi", nr:3}];
-							assert(
-								table(
-									apply(data, function(el, i){
-										return tr(i%2?null:{"class":"even"},
-											td(el.nm), td(el.nr)
-										)
-									})
-								),
-								"<table><tr class=\"even\"><td>abc</td><td>1</td></tr><tr><td>def</td><td>2</td></tr><tr class=\"even\"><td>ghi</td><td>3</td></tr></table>"
-							);
-						}
-					}),
+						test("Таблица с заголовком", "Шаблоны", function(){
+							with(Clarino.simple){
+								var data = [{nm:"abc", nr:1}, {nm:"def", nr:2}];
+								assert(
+									table({border:0, cellpadding:3, cellspacing:0},
+										tr(th("Name"), th("Number")),
+										apply(data, function(el){
+											return tr(td(el.nm), td(el.nr))
+										})
+									),
+									"<table border=\"0\" cellpadding=\"3\" cellspacing=\"0\"><tr><th>Name</th><th>Number</th></tr><tr><td>abc</td><td>1</td></tr><tr><td>def</td><td>2</td></tr></table>"
+								);
+							}
+						}),
 
-					test("Таблица с заголовком", "Шаблоны", function(){
-						with(Clarino.simple){
-							var data = [{nm:"abc", nr:1}, {nm:"def", nr:2}];
-							assert(
-								table({border:0, cellpadding:3, cellspacing:0},
-									tr(th("Name"), th("Number")),
-									apply(data, function(el){
-										return tr(td(el.nm), td(el.nr))
-									})
-								),
-								"<table border=\"0\" cellpadding=\"3\" cellspacing=\"0\"><tr><th>Name</th><th>Number</th></tr><tr><td>abc</td><td>1</td></tr><tr><td>def</td><td>2</td></tr></table>"
-							);
-						}
-					}),
+						test("Таблица с источником данных в структуре", "Шаблоны", function(){
+							with(Clarino.simple){
+								var data = {
+									"John":22,
+									"Phill":33,
+									"George":44
+								};
+								assert(
+									table(
+										apply(data, function(val, nm){
+											return tr(
+												td(nm),
+												td(val)
+											);
+										})
+									),
+									"<table><tr><td>John</td><td>22</td></tr><tr><td>Phill</td><td>33</td></tr><tr><td>George</td><td>44</td></tr></table>"
+								);
+							}
+						}),
 
-					test("Таблица с источником данных в структуре", "Шаблоны", function(){
-						with(Clarino.simple){
-							var data = {
-								"John":22,
-								"Phill":33,
-								"George":44
-							};
-							assert(
-								table(
-									apply(data, function(val, nm){
-										return tr(
-											td(nm),
-											td(val)
-										);
-									})
-								),
-								"<table><tr><td>John</td><td>22</td></tr><tr><td>Phill</td><td>33</td></tr><tr><td>George</td><td>44</td></tr></table>"
-							);
-						}
-					}),
+						test("Нумерация", "Шаблоны", function(){
+							with(Clarino.simple){
+								var data = [{nm:"abc", nr:1}, {nm:"def", nr:2}];
+								assert(
+									div(
+										apply(data, function(el, i){
+											return p((i+1)+". "+el.nm);
+										})
+									),
+									"<div><p>1. abc</p><p>2. def</p></div>"
+								)
+							}
+						}),
 
-					test("Нумерация", "Шаблоны", function(){
-						with(Clarino.simple){
-							var data = [{nm:"abc", nr:1}, {nm:"def", nr:2}];
-							assert(
-								div(
-									apply(data, function(el, i){
-										return p((i+1)+". "+el.nm);
-									})
-								),
-								"<div><p>1. abc</p><p>2. def</p></div>"
-							)
-						}
-					}),
+						test("Нумерация с разделителем", "Шаблоны", function(){
+							with(Clarino.simple){
+								var data = [{nm:"abc", nr:1}, {nm:"def", nr:2}];
+								assert(
+									div(
+										apply(data, function(el, i){
+											return span((i+1)+". "+el.nm);
+										}, ", ")
+									),
+									"<div><span>1. abc</span>, <span>2. def</span></div>"
+								)
+							}
+						}),
 
-					test("Нумерация с разделителем", "Шаблоны", function(){
-						with(Clarino.simple){
-							var data = [{nm:"abc", nr:1}, {nm:"def", nr:2}];
-							assert(
-								div(
-									apply(data, function(el, i){
-										return span((i+1)+". "+el.nm);
-									}, ", ")
-								),
-								"<div><span>1. abc</span>, <span>2. def</span></div>"
-							)
-						}
-					}),
+						test("Нумерация с разделителем 2", "Шаблоны", function(){
+							with(Clarino.simple){
+								var data = [1, 2, null, 3, ""];
+								assert(
+									div(
+										apply(data, function(el, i){
+											if(el==3) return null;
+											return span(el);
+										}, ", ", true)
+									),
+									"<div><span>1</span>, <span>2</span></div>",
+									"Error 1"
+								)
+								assert(
+									div(
+										apply(data, function(el, i){
+											if(el==3) return null;
+											return span(el);
+										}, ", ", false)
+									),
+									"<div><span>1</span>, <span>2</span>, <span></span>, , <span></span></div>",
+									"Error 2"
+								)
+							}
+						}),
 
-					test("Нумерация с разделителем 2", "Шаблоны", function(){
-						with(Clarino.simple){
-							var data = [1, 2, null, 3, ""];
-							assert(
-								div(
-									apply(data, function(el, i){
-										if(el==3) return null;
-										return span(el);
-									}, ", ", true)
-								),
-								"<div><span>1</span>, <span>2</span></div>",
-								"Error 1"
-							)
-							assert(
-								div(
-									apply(data, function(el, i){
-										if(el==3) return null;
-										return span(el);
-									}, ", ", false)
-								),
-								"<div><span>1</span>, <span>2</span>, <span></span>, , <span></span></div>",
-								"Error 2"
-							)
-						}
-					}),
+						test("Итерация 1", "Шаблоны", function(){
+							with(Clarino.simple){
+								assert(
+									div(
+										repeat(2, function(i){
+											return span(i);
+										})
+									),
+									"<div><span>1</span><span>2</span></div>"
+								);
+							}
+						}),
 
-					test("Итерация 1", "Шаблоны", function(){
-						with(Clarino.simple){
-							assert(
-								div(
-									repeat(2, function(i){
-										return span(i);
-									})
-								),
-								"<div><span>1</span><span>2</span></div>"
-							);
-						}
-					}),
+						test("Итерация 2", "Шаблоны", function(){
+							with(Clarino.simple){
+								assert(
+									div(
+										p("xyz"),
+										repeat(2, function(i){
+											return span(i);
+										}),
+										p("abc")
+									),
+									"<div><p>xyz</p><span>1</span><span>2</span><p>abc</p></div>"
+								);
+							}
+						}),
 
-					test("Итерация 2", "Шаблоны", function(){
-						with(Clarino.simple){
-							assert(
-								div(
-									p("xyz"),
-									repeat(2, function(i){
-										return span(i);
-									}),
-									p("abc")
-								),
-								"<div><p>xyz</p><span>1</span><span>2</span><p>abc</p></div>"
-							);
-						}
-					}),
-
-					test("Итерация с разделителем", "Шаблоны", function(){
-						with(Clarino.simple){
-							assert(
-								div(
-									repeat(2, function(i){
-										return span(i);
-									}, ", ")
-								),
-								"<div><span>1</span>, <span>2</span></div>"
-							);
-						}
-					}),
-					
+						test("Итерация с разделителем", "Шаблоны", function(){
+							with(Clarino.simple){
+								assert(
+									div(
+										repeat(2, function(i){
+											return span(i);
+										}, ", ")
+									),
+									"<div><span>1</span>, <span>2</span></div>"
+								);
+							}
+						})
+					)),
+					manualSection(3, 'Форматироване XML', markup(
+						p('Библиотека Clariono может быть использована также для создания фрагментов XML-кода. В общих чертах, используется такой же подход, как и к обычной HTML-верстке. Отличие заключается лишь в том, что требуется создание определений для новых тегов.'),
+						p('Для объявления новых тегов используется метод ', a({href:'#clarino_gettagdefinitions'}, 'Clarino.getTagDefinitions()'), '.'),
+						p('Например, для создания XML-документа ', code('<person><name>John</name><phone>444-44-44</phone></person>'), ' требуется создать следующее определение тегов: ', code('Clarino.getTagDefinitions("person;name;phone")'), '. Полученный объект будет содержать методы ', code('person()'), ', ', code('name()'), ', и ', code('phone()'), ', реализующие форматирование тегов аналогично с рассмотренными выше тегами HTML')
+					))
 				)),
 				manualSection(2, 'Справочник', markup(
-					manualSection(3, 'Разделы', div(
+					manualSection(3, 'Разделы', 'divisions', div(
+						p('Для упрощения доступа атрибуты и методы библиотеки Clarino сгруппированы в несколько разделов.'),
 						referenceManual('Clarino', $C, { 
 							html: markup(
-								p('Содержит определения HTML-тегов'),
+								p('Содержит определения ', a({href:'#htmltags'}, 'HTML-тегов')),
 								test(function(){assertTrue(typeof($C.html)=='object');})
 							),
 							css: markup(
-								p('Содержит функции для формирования CSS-таблиц'),
+								p('Содержит функции для формирования ', a({href:'#csstables'},'CSS-таблиц')),
 								test(function(){assertTrue(typeof($C.css)=='object');})
 							),
 							simple: markup(
-								p('Содержит упрощенный интерфейс для создания простых веб-форм'),
-								test(function(){assertTrue(typeof($C.simple)=='object');})
+								p('Содержит упрощенный интерфейс для создания простых веб-форм. В этот раздел включены основные методы ', a({href:'#templating'}, 'шаблонизации'), ' и ', a({href:'#formatting'}, 'форматирования'), ', а также определения наиболее часто используемых ', a({href:'#htmltags'}, 'тегов HTML'), '.'),
+								test(function(){assertTrue(typeof($C.simple)=='object');}),
+								p('Список включенных в этот раздел методов: '),
+								listOfMethods($C.simple)
 							)
-						})
+						}),
+						p('Корневой раздел модуля ', code('Clarino'), ' содержит функции ', a({href:'#templating'}, 'шаблонизации'), ', ', a({href:'#formatting'}, 'форматирования'), ', а также ряд вспомогательных функций.')
 					)),
-					manualSection(3, 'HTML-теги', div(
+					manualSection(3, 'HTML-теги', 'htmltags', div(
+						p('Определения HTML-тегов размещены в разделе ', code('Clarino.html'), '. Кроме того, наиболее употребительные теги доступны также через раздел ', code('Clarino.simple')),
 						referenceManual('Clarino.html', $C.html, function(){
 							// https://www.w3schools.com/tags/
 							var tags = 'a;abbr;address;area;article;aside;audio;b;base;bdi;bdo;blockquote;body;br;button;canvas;caption;cite;code;col;colgroup;datalist;dd;del;details;dfn;dialog;div;dl;dt;em;embed;fieldset;figcaption;figure;footer;form;h1;h2;h3;h4;h5;h6;head;header;hr;html;i;iframe;img;input;ins;kbd;keygen;label;legend;li;link;main;map;mark;menu;menuitem;meta;meter;nav;nobr;noscript;object;ol;optgroup;option;output;p;param;picture;pre;progress;q;rp;rt;ruby;s;samp;script;section;select;small;source;span;strong;style;sub;summary;sup;svg;table;tbody;td;textarea;tfoot;th;thead;time;title;tr;track;u;ul;var;video;wbr'.split(';');
@@ -529,21 +716,68 @@
 							return tagDefs;
 						})
 					)),
-					manualSection(3, 'Шаблонизация', div(
+					manualSection(3, 'Шаблонизация', 'templating', div(
 						referenceManual('Clarino', $C, {
 							apply: markup(
-								p('Применяет шаблон к элементам массива или полям объекта')
+								a({name:'clarino_apply'}),
+								p('Применяет шаблон к элементам массива или полям объекта'),
+								p('Входные параметры: ', code('Clarino.apply(collection, template, separator)')),
+								ol(
+									li($C.html.b('collection'), ' - исходная структура данных (массив или объект)'),
+									li($C.html.b('template'), ' - функция-шаблон, применяемая ко всем элементам исходной структуры. Шаблон получает значение текущего элемента, а также его индекс в массиве (или имя соответствующего атрибута в объекте)'),
+									li($C.html.b('separator'), ' (необязательный) - разделитель, вставляемый между результатами применения шаблона')
+								),
+								testSample('Clarino.apply([1,2,3], function(x, i){return Clarino.html.span(i,":", x);})', '<span>0:1</span><span>1:2</span><span>2:3</span>'),
+								testSample('Clarino.apply([1,2,3], function(x){return Clarino.html.span(x);}, ", ")', '<span>1</span>, <span>2</span>, <span>3</span>'),
+								testSample('Clarino.apply({x:2, y:3}, function(v,nm){return Clarino.html.span(Clarino.html.b(nm), ":", v);})', '<span><b>x</b>:2</span><span><b>y</b>:3</span>')
 							),
-							repeat: markup('Применяет шаблон указанное число раз'),
-							markup: markup('Контейнер для произвольного набора тегов, не формирующий для них родительский тег.')
+							repeat: markup(
+								p('Применяет шаблон указанное число раз'),
+								p('Входные параметры: ', code('Clarino.repeat(count, template, separator)')),
+								ol(
+									li($C.html.b('count'), ' - количество итераций'),
+									li($C.html.b('template'), ' - функция-шаблон, применяемая на каждой итерации. Получает текущий номер итерации, исчисляемый начиная с единицы.'),
+									li($C.html.b('separator'), ' (необязательный) - разделитель, вставляемый между результатами применения шаблона')
+								),
+								testSample('Clarino.repeat(4, function(n){return Clarino.html.span(n);}, ";")', '<span>1</span>;<span>2</span>;<span>3</span>;<span>4</span>')
+							),
+							markup: markup(
+								p('Контейнер для произвольного набора тегов, не формирующий для них родительский тег.'),
+								testSample('Clarino.markup("abc", Clarino.html.span("def"))', 'abc<span>def</span>')
+							)
 						})
 					)),
 					manualSection(3, 'Настройка', div(
 						referenceManual('Clarino', $C, {
-							version: markup('Возвращает текущую версию модуля или интерфейс для заданной версии'),
-							xhtmlMode: markup('Включает режим форматирования XHTML'),
+							version: markup(
+								p('Получает минимальную версию библиотеки, необходимую для функционирования пользовательского кода. Возвращает объект, реализующий интерфейс библиотеки заданой версии.'),
+								codesample(['var $C = Clarino.version("1.0.2");']),
+								p('При вызове без аргументов возвращает текущую версию модуля.')
+							),
+							compareVersions:markup(
+								p('Сравнивает номера версий. Получает два номер версии, возвращает 0, если номера одинаковые, 1, если первый номер больше, и -1, если второй номер больше.'),
+								test("compareVersions", "Configuration", function(){
+									assert(Clarino.compareVersions("1.2.3", "1.2.3"), 0);
+									assert(Clarino.compareVersions("2.2.3", "1.2.3"), 1);
+									assert(Clarino.compareVersions("1.2.3", "2.2.3"), -1);
+									assert(Clarino.compareVersions("1.3.3", "1.2.3"), 1);
+									assert(Clarino.compareVersions("1.2.3", "1.3.3"), -1);
+									assert(Clarino.compareVersions("1.2.4", "1.2.3"), 1);
+									assert(Clarino.compareVersions("1.2.3", "1.2.4"), -1);
+												
+									assert(Clarino.compareVersions("2.0.9", "2.0.9"), 0);
+									assert(Clarino.compareVersions("2.0.10", "2.0.10"), 0);
+												
+									assert(Clarino.compareVersions("2.0.10", "2.0.9"), 1, "Err 1");
+									assert(Clarino.compareVersions("2.0.9", "2.0.10"), -1, "Err 2");
+								})
+							),
+							xhtmlMode: markup(
+								p('Устанавливает режим форматирования XHTML. В таком режиме все теги, не имеющие внутренних тегов или текста, будут принудительно закрыты, как это предусматривается форматом XML. Т.е. тег ', code('<img src="photo.jpg">'), ' будет выглядеть следующим образом: ', code('<img src="photo.jpg"/>'), '.')
+							),
 							extend: markup(
-								p('Добавляет поля к существующему объекту'),
+								p('Добавляет поля к существующему объекту. Получает модифицируемый объект и объект, содержащий добавляемые поля.'),
+								p('Например, если имеется объект ', code('var obj = {x:3};'), ' , то вызов ', code('Clarino.extend(obj, {y:"abc"});'), ' приведет исходный объект к следующему виду:', code('{x:3, y:"abc"}'), '.'),
 								test(function(){
 									var obj = {x:3};
 									$C.extend(obj, {y:'abc'});
@@ -571,7 +805,7 @@
 							)
 						})
 					)),
-					manualSection(3, 'Форматирование', div(
+					manualSection(3, 'Форматирование', 'formatting', div(
 						referenceManual('Clarino', $C, {
 							tag: markup(
 								p('Создает фрагмент разметки с произвольным тегом. Функции передается имя тега, и массив размещаемых в нем значений.'),
@@ -667,11 +901,12 @@
 							)
 						})
 					)),
-					manualSection(3, 'Объявления', div(
+					manualSection(3, 'Объявления', 'definitions', div(
 						referenceManual('Clarino', $C, {
 							defineTags: markup(
 								p('Создает дополительные определения тегов в разделе Clarino.html.'),
-								p('Получает строку, содержащую имена тегов, разделенных точкой с запятой. Если имя тега совпадает с зарезервированным словом JavaScript, имя такого тега должно предваряться символом подчеркивания.'),
+								p('Получает строку, содержащую имена тегов, разделенных точкой с запятой.'),
+								attention('Если имя тега совпадает с зарезервированным словом JavaScript, имя такого тега должно предваряться символом подчеркивания.'),
 								test("Tag Definitions", "Extensions", function(){ with(Clarino.simple){
 									Clarino.defineTags("ss;ssl");
 									var html = (function(){with(Clarino.html){
@@ -704,7 +939,10 @@
 								}}),
 							),
 							getTagDefinitions: markup(
-								p('Возвращает набор определений тегов. Работает аналогично методу Clarino.defineTags.'),
+								a({name:'clarino_gettagdefinitions'}),
+								p('Получает строку, содержащую имена определяемых тегов, разделенные точками с запятой'),
+								p('Возвращает объект, содержащий методы, соответствующие определяемым тегам.'),
+								attention('Если имя тега совпадает с зарезервированным словом JavaScript, имя такого тега должно предваряться символом подчеркивания.'),
 								test("Document type definition", "XML", function(){ with(Clarino.simple){
 									var xml = (function(){with(Clarino.getTagDefinitions("library;book")){
 										return library(
@@ -724,10 +962,18 @@
 									assert(xml, "<library><book title=\"Война и мир\"/><book title=\"Капитанская дочка\"/></library>");
 								}})
 							),
-							symbols: markup('Создает структуру для хранения строковых констант')
+							symbols: markup(
+								p('Создает структуру для хранения строковых констант.'),
+								p('Метод получает строку, содержащую список строковых констант, разделенных точками с запятой. Возвращает объект, имеющий атрибуты, имена и значения которых соответствуют указанным при вызове строковым константам'),
+								p('Например, вызов ', code('Clarino.symbols("abc;def")'), ' возвратит объект ', code('{abc:"abc", def:"def"}'), '.'),
+								test('Symbols', 'Definitions', function(){
+									var ss = Clarino.symbols('abc;def');
+									assert(ss, {abc:'abc', def:'def'});
+								})
+							)
 						})
 					)),
-					manualSection(3, 'CSS', div(
+					manualSection(3, 'CSS', 'csstables', div(
 						referenceManual('Clarino.css', $C.css, {
 							stylesheet: markup(
 								p('Формирует фрагмент CSS-кода. Получает JSON-структуру, содержащую описание стилей. Возвращает соответствующий CSS-код.'),
@@ -797,32 +1043,8 @@
 								p('Словарь для определения сокращенных названий CSS-атрибутов. Ключ - сокращенное название атрибута, для использования в методах', code('Clarino.css.stylesheet()'), ' и ', code('Clarino.css.writeStylesheet()'), '. Значение - стандартное имя CSS-атрибута, которое будет вставлено в формируемый CSS-код.')
 							)
 						})
-					)),
-					referenceManual('Clarino', $C, {
-						compareVersions:markup(
-							p('Сравнивает номера версий. Возвращает 0, если номера одинаковые, 1, если первый номер больше, и -1, если второй номер больше.'),
-							test("compareVersions", "Configuration", function(){
-								assert(Clarino.compareVersions("1.2.3", "1.2.3"), 0);
-								assert(Clarino.compareVersions("2.2.3", "1.2.3"), 1);
-								assert(Clarino.compareVersions("1.2.3", "2.2.3"), -1);
-								assert(Clarino.compareVersions("1.3.3", "1.2.3"), 1);
-								assert(Clarino.compareVersions("1.2.3", "1.3.3"), -1);
-								assert(Clarino.compareVersions("1.2.4", "1.2.3"), 1);
-								assert(Clarino.compareVersions("1.2.3", "1.2.4"), -1);
-											
-								assert(Clarino.compareVersions("2.0.9", "2.0.9"), 0);
-								assert(Clarino.compareVersions("2.0.10", "2.0.10"), 0);
-											
-								assert(Clarino.compareVersions("2.0.10", "2.0.9"), 1, "Err 1");
-								assert(Clarino.compareVersions("2.0.9", "2.0.10"), -1, "Err 2");
-							})
-						)
-					}, true),
-					referenceManual('Clarino.html', $C.html, {}, true),
-					// referenceManual('Clarino.simple', $H, {}, true),
-					referenceManual('Clarino.css', $C.css, {}, true)
+					))
 				))
-				// manualSection(1, 'Общие тесты', div())
 			);
 		}}
 
