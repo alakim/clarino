@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
 	<title></title>
 	<script src="tools/jquery-3.1.1.min.js"></script>
-	<script src="clarino.js"></script>
+	<script src="clarino.min.js"></script>
 
 	<script>
 	(function($, $C){
@@ -55,6 +55,9 @@
 				' .code':{
 					backgroundColor: '#eaeaea',
 					fontFamily: 'Courier New, Monospace'
+				},
+				' span.code':{
+					whiteSpace: css.nowrap
 				},
 				' .attention':{
 					color: '#f00'
@@ -698,7 +701,7 @@
 								}),
 								p(
 									'Например, для создания XML-документа ', code(xCode), ' требуется создать следующее определение тегов: ',
-									code(defCode), '. Полученный объект будет содержать методы ', methodSet, 
+									code('var xDef = '+defCode), '. Полученный объект ', code('xDef'),' будет содержать методы ', methodSet, 
 									', реализующие форматирование тегов аналогично с рассмотренными выше тегами HTML.'
 								)
 							);
