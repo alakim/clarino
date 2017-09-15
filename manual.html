@@ -211,12 +211,12 @@
 			assert(res, expected);
 
 			return markup(
-				p('Например, вызов ', code(actionCode), ' вернет строку ', code(expected), '.'),
-				errors.length?div({'class':'error'}, 
+				span(' вызов ', code(actionCode), ' вернет строку ', code(expected)),
+				errors.length?span({'class':'error'}, 
 					name, ' ',
 					$C.apply(errors, function(e){return div(e)})
 				)
-				:showTests?div({'class':'success'}, 'Test performed'):null
+				:showTests?span({'class':'success'}, 'Test performed'):null
 
 			);
 		}}
@@ -300,7 +300,7 @@
 					)),
 					manualSection(3, 'Простая верстка', div(
 						p('Для формирования фрагментов HTML-кода в разделе ', code('Clarino.html'), ' имеются методы, соответствующие HTML-тегам, определенным в стандарте HTML5. Каждый из этих методов преобразует все переданные ему значения в строки, конкатенирует эти строки, и заключает их в соответствующий тег HTML5.'),
-						testSample('Clarino.html.p("abc", "def")', '<p>abcdef</p>'),
+						p('Например, ', testSample('Clarino.html.p("abc", "def")', '<p>abcdef</p>'), '.'),
 						p('Для удобства, чтобы не указывать каждый раз имя раздела ', code('Clarino.html'), ', можно использовать конструкцию ', code('with(Clarino.html){....}'), '.'),
 						p('Если используется режим ', code("'use strict'"), ', следует использовать деструктуризацию, например: ', code('let {div, p, span} = Clarino.html;'), '.'),
 						p('Вот пример функции, возвращающей HTML-код со вложенными тегами:'),
@@ -442,7 +442,7 @@
 					manualSection(3, 'Структуры данных и шаблонизация', markup(
 						p('При создании фрагментов HTML-верстки, отображающих сложные структуры данных (массивы или объекты), необходимо использование функций ', a({href:'#templating'}, 'шаблонизации'),'.'),
 						attention(markup('Для удобства доступа к фукнциям шаблонизации одновременно с часто используемыми тегами HTML предусмотрен специальный ', a({href:'#divisions'}, 'раздел'), ' библиотеки ', code('Clarino.simple'), ', включающий в себя функции шаблонизации, форматирования, а также основные теги HTML.')),
-						p('Основной функцией для отображения структур данных является ', a({href:'#clarino_apply'}, ' функция ', 'Clarino.apply()'), '. Функция получает исходную структуру данных, а также функцию-шаблон, применяемую к каждому элементу структуры. Если структура является массивом, в шаблон передается каждый его элемент. Если структура является объектом, в шаблон передаются значение и имя каждого из атрибутов данного объекта. Если исходный объект кроме атрибутов имеет также методы, эти методы игнорируются.'),
+						p('Основной функцией для отображения структур данных является ', a({href:'#clarino_apply'}, ' функция ', 'Clarino.apply()'), '. Функция получает исходную структуру данных, а также функцию-шаблон, применяемую к каждому элементу структуры. Если структура является массивом, в шаблон передается каждый его элемент. Если структура является объектом, в шаблон передаются значение и имя каждого из атрибутов данного объекта.'),
 						p('Результаты применения шаблона ко всем элементам исходной структуры соединяются в единую строку. Если требуется разделитель, его можно указать третьим аргументом функции.'),
 						p('Допустим, имеется следующая структура данных:'),
 						codesample([
@@ -706,6 +706,91 @@
 								)
 							);
 						})()
+					)),
+					manualSection(3, 'Создание CSS-таблиц', 'usingCss', markup(
+						p('Для создания таблиц стилей используются методы, доступные в разделе ', a({href:'#csstables'}, 'Clarino.css'), '. Данный подход позволяет хорошо структурировать информацию о стилях, используя все возможности языка JavaScript для формирования повторяющихся или обобщенных фрагментов CSS-кода. Кроме того, появляется возможность при создании отдельных программных модулей описывать необходимые базовые стили отображения непосредственно в JavaScript-коде этих модулей без необходимости подключения внешних CSS-файлов.'),
+						p('Таблица стилей описывается в виде вложенных JSON-объектов, и передается либо методу ', code('Clarino.css.stylesheet()'), ', который возвращает готовый CSS-код, либо методу ', code('Clarino.css.writeStylesheet()'), ', который формирует тег ', code('<style>'), ', содержащий соответствующий CSS-код, и выводит его непосредственно в поток загружаемого документа с помощью стандартного метода ', code('document.write()'),'.'),
+						p('Правила формирования JSON-описания стилей довольно просты:'),
+						p('JSON-объект содержит пары "ключ:значение", трактуемые как имя и значение соответствующего свойства CSS. Однако, если значение также является JSON-объектом, то соответствующий ключ трактуется как CSS-селектор.'),
+						(function(){
+							var srcJson = [
+								'{',
+								'	"div.attention":{',
+								'		margin:"5px",',
+								'		color:"#f00"',
+								'	}',
+								'}'
+							];
+							var cssRes = [
+								'div.attention{',
+								'	margin:5px;',
+								'	color:#f00;',
+								'}'
+							];
+							var src = (new Function('return '+srcJson.join('')))();
+							var css = $C.css.stylesheet(src);
+							return markup(
+								test(function(){
+									assert(
+										css.replace(/\s+/gi, ' ').replace(/\s+:\s+/gi, ':').replace(/\s+;/gi, ';').replace(/;\s+}/gi, ';}'), 
+										cssRes.join('').replace(/\s+/gi, ' ')
+									);
+								}),
+								p('Например, следующее JSON-определение:'),
+								codesample(srcJson),
+								p('будет преобразовано в следующую таблицу стилей:'),
+								codesample(cssRes)
+							);
+						})(),
+						(function(){
+							var srcJson = [
+								'{',
+								'	"div.mainForm":{',
+								'		border:"1px solid #ccc",',
+								'		padding: "5px",',
+								'		" .name":{',
+								'			"font-weight":"bold"',
+								'		}',
+								'	}',
+								'}'
+							];
+							var cssRes = [
+								'div.mainForm{',
+								'	border:1px solid #ccc;',
+								'	padding:5px;',
+								'}',
+								'div.mainForm .name{',
+								'	font-weight:bold;',
+								'}'
+							];
+							var src = (new Function('return '+srcJson.join('')))();
+							var css = $C.css.stylesheet(src);
+							return markup(
+								test(function(){
+									assert(
+										css.replace(/\s+/gi, ' ').replace(/\s+:\s+/gi, ':')
+											.replace(/\s+;/gi, ';').replace(/;\s+}/gi, ';}')
+											.replace('} div', '}div')
+										, 
+										cssRes.join('').replace(/\s+/gi, ' ')
+									);
+								}),
+								p('Если некоторый JSON-объект вложен в другой, то к его селектору будет добавлен спереди селектор родительского объекта, и т.д. вверх по иерархии. Например, следующее JSON-определение:'),
+								codesample(srcJson),
+								p('будет преобразовано в следующую таблицу стилей:'),
+								codesample(cssRes),
+								attention(markup('Следует обратить внимание на пробел перед селектором ', code('" .name"'), ' в исходном коде. Он важен, т.к. влияет на результат конкатенации селекторов: ', code('div.mainForm .name'), ' и ', code('div.mainForm.name'), ' - не одно и то же (см. любой справочник по CSS).'))
+							);
+						})(),
+						p('Для облегчения записи имен свойств CSS, содержащих дефис, допускается записывать их без дефиса, переводя следующую за дефисом букву в верхний регистр. Например, ', code('fontWeight'), ' будет автоматически преобразовано в ', code('font-weight'), '.'),
+						p('Для облегчения работы с единицами измерения имеется метод ', a({href:'#clarino_css_unit'}, 'Clarino.css.unit()'), '.'),
+						p('Для уменьшения количества строковых констант при создании CSS-таблиц предлагается к использованию словарь ', code('Clarino.css.keywords'), ', содержащий наиболее употребительные строковые значения свойств CSS.'),
+						comment('Уменьшение количества строковых констант позволяет снизить нагрузку на сборщик мусора'),
+						p(
+							'Например, ', testSample('Clarino.css.keywords.none', 'none'), ', ',
+							testSample('Clarino.css.keywords.left', 'left'), ', a',
+							testSample('Clarino.css.keywords.flexStart', 'flex-start'), '.'
+						)
 					))
 				)),
 				manualSection(2, 'Справочник', markup(
@@ -758,9 +843,12 @@
 									li($C.html.b('template'), ' - функция-шаблон, применяемая ко всем элементам исходной структуры. Шаблон получает значение текущего элемента, а также его индекс в массиве (или имя соответствующего атрибута в объекте)'),
 									li($C.html.b('separator'), ' (необязательный) - разделитель, вставляемый между результатами применения шаблона')
 								),
-								testSample('Clarino.apply([1,2,3], function(x, i){return Clarino.html.span(i,":", x);})', '<span>0:1</span><span>1:2</span><span>2:3</span>'),
-								testSample('Clarino.apply([1,2,3], function(x){return Clarino.html.span(x);}, ", ")', '<span>1</span>, <span>2</span>, <span>3</span>'),
-								testSample('Clarino.apply({x:2, y:3}, function(v,nm){return Clarino.html.span(Clarino.html.b(nm), ":", v);})', '<span><b>x</b>:2</span><span><b>y</b>:3</span>')
+								p('Примеры: '),
+								ul(
+									li(testSample('Clarino.apply([1,2,3], function(x, i){return Clarino.html.span(i,":", x);})', '<span>0:1</span><span>1:2</span><span>2:3</span>'), ';'),
+									li(testSample('Clarino.apply([1,2,3], function(x){return Clarino.html.span(x);}, ", ")', '<span>1</span>, <span>2</span>, <span>3</span>'), ';'),
+									li(testSample('Clarino.apply({x:2, y:3}, function(v,nm){return Clarino.html.span(Clarino.html.b(nm), ":", v);})', '<span><b>x</b>:2</span><span><b>y</b>:3</span>'), '.')
+								)
 							),
 							repeat: markup(
 								p('Применяет шаблон указанное число раз'),
@@ -770,11 +858,15 @@
 									li($C.html.b('template'), ' - функция-шаблон, применяемая на каждой итерации. Получает текущий номер итерации, исчисляемый начиная с единицы.'),
 									li($C.html.b('separator'), ' (необязательный) - разделитель, вставляемый между результатами применения шаблона')
 								),
-								testSample('Clarino.repeat(4, function(n){return Clarino.html.span(n);}, ";")', '<span>1</span>;<span>2</span>;<span>3</span>;<span>4</span>')
+								p('Например, ',
+									testSample('Clarino.repeat(4, function(n){return Clarino.html.span(n);}, ";")', '<span>1</span>;<span>2</span>;<span>3</span>;<span>4</span>'), '.'
+								)
 							),
 							markup: markup(
 								p('Контейнер для произвольного набора тегов, не формирующий для них родительский тег.'),
-								testSample('Clarino.markup("abc", Clarino.html.span("def"))', 'abc<span>def</span>')
+								p('Например, ',
+									testSample('Clarino.markup("abc", Clarino.html.span("def"))', 'abc<span>def</span>'), '.'
+								)
 							)
 						})
 					)),
@@ -840,7 +932,9 @@
 						referenceManual('Clarino', $C, {
 							tag: markup(
 								p('Создает фрагмент разметки с произвольным тегом. Функции передается имя тега, и массив размещаемых в нем значений.'),
-								testSample('Clarino.tag("a", ["abc"])', '<a>abc</a>'),
+								p('Например, ', 
+									testSample('Clarino.tag("a", ["abc"])', '<a>abc</a>'), '.'
+								),
 								test(function(){
 									assert(Clarino.tag('a', ['abc']), '<a>abc</a>');
 								})
@@ -865,11 +959,13 @@
 									assert(style, "width:100%;height:80px;color:#f00");
 								}}),
 								p('Для сокращения записи допускается имена CSS-атрибутов, содержащие дефис, указывать без дефиса, заменяя при этом регистр следующей за ним буквы на верхний.'),
-								testSample('Clarino.formatStyle({fontSize:12})', 'font-size:12px')
+								p('Например, ',
+									testSample('Clarino.formatStyle({fontSize:12})', 'font-size:12px'), '.'
+								)
 							),
 							format: markup(
 								p('Форматирование строки со вставкой значений'),
-								testSample('Clarino.format("abc{0}def{1}ghi", 1, 2)', 'abc1def2ghi'),
+								p('Например, ', testSample('Clarino.format("abc{0}def{1}ghi", 1, 2)', 'abc1def2ghi'), '.'),
 								test("format function", "Formatting", function(){ with(Clarino.simple){
 									assert(format("abc{0}def", 1), "abc1def");
 									assert(format("abc '{0}' def", 1), "abc '1' def");
@@ -878,7 +974,7 @@
 							),
 							entities: markup(
 								p('Заменяет символы, не допустимые в HTML- или XML-разметке на соответствующие сущности (entity)'),
-								testSample('Clarino.entities("a<b")', 'a&lt;b'),
+								p('Например, ', testSample('Clarino.entities("a<b")', 'a&lt;b'), '.'),
 								test('Entities function', 'Formatting', function(){with(Clarino.simple){
 									assert(entities('a<b'), 'a&lt;b'),
 									assert(entities('<p>xxx</p>'), '&lt;p&gt;xxx&lt;/p&gt;');
@@ -888,7 +984,7 @@
 							callFunction: markup(
 								p('Формирует строку вызова функции для привязки обработчика события к HTML-элементу'),
 								p('При вызове передаются имя вызываемой функции, и список ее аргументов.'),
-								testSample('Clarino.callFunction("myFunction", 1, "abc", [1,2,3], {x:1, y:2, name:"abba"})', "myFunction(1,'abc',[1,2,3],{x:1,y:2,name:'abba'})"),
+								p('Например, ', testSample('Clarino.callFunction("myFunction", 1, "abc", [1,2,3], {x:1, y:2, name:"abba"})', "myFunction(1,'abc',[1,2,3],{x:1,y:2,name:'abba'})"), '.'),
 								test("callFunction function", "Formatting", function(){ with(Clarino.simple){
 									assert(callFunction("alert", 1), "alert(1)");
 									assert(callFunction("alert", "abc"), "alert('abc')");
@@ -1039,7 +1135,13 @@
 							),
 							writeStylesheet: markup('Формирует строку CSS-кода с помощью метода ', code('Clarino.css.stylesheet'), ', и выводит ее в поток загружаемого документа.'),
 							unit: markup(
-								p('Формирует метод для форматирования единиц измерения'),
+								a({name:'clarino_css_unit'}),
+								p('Получает наименование единицы измерения, возвращает метод, добавляющий к числам наименование данной единицы.'),
+								p('Например, ',
+									testSample('Clarino.css.unit("vw")(50)', '50vw'), ', ',
+									testSample('Clarino.css.unit("vw")(50, 20)', '50vw 20vw'), ', а ',
+									testSample('Clarino.css.unit("px")(120, "auto")', '120px auto'), '.'
+								),
 								test("Units", "Extensions", function(){
 									var px = Clarino.css.unit("px");
 									assert(px(22), "22px");
@@ -1047,15 +1149,35 @@
 									assert(Clarino.css.unit.px(22), '22px');
 									assert(Clarino.css.unit.pc(100), '100%');
 									assert(Clarino.css.unit.px(22, Clarino.css.keywords.auto), '22px auto');
-								})
+								}),
+								(function(){
+									var units = [];
+									for(var k in Clarino.css.unit){
+										units.push(k);
+									}
+									units.sort();
+									var nms = {px:'px', em:'em', pc:'%'};
+									return markup(
+										p('Имеется ряд предопределенных единиц:'),
+										ul(apply(units, function(u){
+											return li(
+												code('Clarino.css.unit.'+u+'()'), 
+												testSample('Clarino.css.unit.'+u+'(5)', '5'+nms[u])
+											);
+										}))
+									);
+								})()
 							),
 							keywords: markup(
 								p('Объект, содержащий строковые константы, соответствующие ключевым словам CSS.'),
 								p('Доступ к константам осуществляется по ключу, совпадающему с требуемым строковым значением. Если строковое значение содержит дефис, то при формировании ключа он опускается, а следующая за ним буква заменяется на заглавную.'),
-								testSample('Clarino.css.keywords.none', 'none'),
-								testSample('Clarino.css.keywords.absolute', 'absolute'),
-								testSample('Clarino.css.keywords.spaceBetween', 'space-between')
+								p('Например, ', 
+									testSample('Clarino.css.keywords.none', 'none'), ', ',
+									testSample('Clarino.css.keywords.absolute', 'absolute'), ', а ',
+									testSample('Clarino.css.keywords.spaceBetween', 'space-between'), '.'
+								)
 							),
+							/* *************************
 							rules: markup(
 								p('Формирует код CSS-правил'),
 								test("CSS Rules", "Extensions", function(){
@@ -1070,6 +1192,7 @@
 							writeRules: markup(
 								p('Записывает CSS-правила, сформированные методом ', code('Clarino.css.rules()', ' в поток вывода документа'))
 							),
+							**************************** */
 							attributes: markup(
 								p('Словарь для определения сокращенных названий CSS-атрибутов. Ключ - сокращенное название атрибута, для использования в методах', code('Clarino.css.stylesheet()'), ' и ', code('Clarino.css.writeStylesheet()'), '. Значение - стандартное имя CSS-атрибута, которое будет вставлено в формируемый CSS-код.')
 							)

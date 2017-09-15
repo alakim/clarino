@@ -231,6 +231,7 @@ var Clarino = (function(){
 		});
 	}
 
+	/* ***************************
 	Css.rules = function(title, styles){
 		return title+'{\n'
 			+ Css.stylesheet(styles)
@@ -242,6 +243,7 @@ var Clarino = (function(){
 		document.write(Css.cssRules(title, styles));
 		document.write('\n</style>\n');
 	}
+	******************************* */
 
 	Css.attributes = {};
 	
