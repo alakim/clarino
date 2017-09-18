@@ -44,6 +44,7 @@ var Phonebook = (function($, $C){
 	});
 
 	function checkRes(res){
+		if(!res) return false;
 		if(res.error){alert('Error: '+res.error); return false;}
 		return true;
 	}
@@ -63,12 +64,17 @@ var Phonebook = (function($, $C){
 				$(pnl).find('.main')
 					.html((function(){with($H){
 						return markup(
-							ol({'class':'itemList'},
-								apply(res, function(el){
-									return li(
-										span({'class':'link lnkItem', 'data-id':el.id}, el.name)
-									);
-								})
+							div({'class':'itemList'},
+								ol(
+									apply(res, function(el){
+										return li(
+											span({'class':'link lnkItem', 'data-id':el.id}, el.name)
+										);
+									})
+								),
+								div(
+									button({'class':'btAdd'}, 'Add item')
+								)
 							),
 							div({'class':'detailsPanel'})
 						);
@@ -77,9 +83,77 @@ var Phonebook = (function($, $C){
 						var id = $(this).attr('data-id');
 						loadItem(id);
 					}).end()
+					.find('.btAdd').click(function(){
+						openItemDialog();
+					}).end()
 				;
 				if(callback) callback();
 			});
+		}
+		
+		function openItemDialog(id, itemData){
+			itemData = itemData || {name:'', phone:'', room:''};
+
+			var dlg = ModalDialog.open('itemEditDialog');
+			dlg
+				.find('.dialogTitle').html((id?'Edit':'Add')+' Item').end()
+				.find('.dialogContent').html((function(){with($H){
+					return table({width:pc(100), border:0},
+						tr(
+							td('Name'),
+							td(input({type:'text', 
+								'class':'tbName',
+								style:$C.formatStyle({width:pc(95)}),
+								value:itemData.name
+							}))
+						),
+						tr(
+							td('Phone'),
+							td(input({type:'text',
+								'class':'tbPhone',
+								style:$C.formatStyle({width:pc(95)}),
+								value:itemData.phone
+							}))
+						),
+						tr(
+							td('Room Nr'),
+							td(input({type:'text',
+								'class':'tbRoom',
+								style:$C.formatStyle({width:pc(95)}),
+								value:itemData.room
+							}))
+						)
+					);
+				}})()).end()
+				.find('.dialogButtons .customButtons')
+					.html((function(){with($H){
+						return markup(
+							button({'class':'btOK'}, 'Save'),
+							id?button({'class':'btDel'}, 'Delete'):null
+						);
+					}})())
+					.find('.btOK').click(function(){
+						var name = dlg.find('.dialogContent .tbName').val(),
+							phone = dlg.find('.dialogContent .tbPhone').val(),
+							room = dlg.find('.dialogContent .tbRoom').val();
+						db.saveRecord(id, {name:name, phone:phone, room:room}, function(res){
+							if(!checkRes(res)) return;
+							dlg.hide();
+							loadList(function(){
+								loadItem(res.id);
+							});
+						});
+					}).end()
+					.find('.btDel').click(function(){
+						if(!confirm('Delete this item?')) return;
+						
+						db.deleteRecord(id, function(res){
+							if(!checkRes(res)) return;
+							dlg.hide();
+							loadList();
+						});
+					}).end()
+			;
 		}
 		
 		function loadItem(id){
@@ -100,56 +174,7 @@ var Phonebook = (function($, $C){
 						);
 					}})())
 					.find('.btEdit').click(function(){
-						var dlg = ModalDialog.open('itemEditDialog');
-						dlg
-							.find('.dialogTitle').html('Edit Item').end()
-							.find('.dialogContent').html((function(){with($H){
-								return table({width:pc(100), border:0},
-									tr(
-										td('Name'),
-										td(input({type:'text', 
-											'class':'tbName',
-											style:$C.formatStyle({width:pc(95)}),
-											value:res.name
-										}))
-									),
-									tr(
-										td('Phone'),
-										td(input({type:'text',
-											'class':'tbPhone',
-											style:$C.formatStyle({width:pc(95)}),
-											value:res.phone
-										}))
-									),
-									tr(
-										td('Room Nr'),
-										td(input({type:'text',
-											'class':'tbRoom',
-											style:$C.formatStyle({width:pc(95)}),
-											value:res.room
-										}))
-									)
-								);
-							}})()).end()
-							.find('.dialogButtons .customButtons')
-								.html((function(){with($H){
-									return markup(
-										button({'class':'btOK'}, 'OK')
-									);
-								}})())
-								.find('.btOK').click(function(){
-									var name = dlg.find('.dialogContent .tbName').val(),
-										phone = dlg.find('.dialogContent .tbPhone').val(),
-										room = dlg.find('.dialogContent .tbRoom').val();
-									db.saveRecord(id, {name:name, phone:phone, room:room}, function(res){
-										if(!checkRes(res)) return;
-										dlg.hide();
-										loadList(function(){
-											loadItem(id);
-										});
-									});
-								}).end()
-						;
+						openItemDialog(id, res);
 					}).end()
 				;
 			});

@@ -18,7 +18,7 @@ var DB = (function(){
 		getList: function(callback){
 			var res = [];
 			for(var el,i=0; el=data[i],i<data.length; i++){
-				res.push({id:i, name:el.name});
+				if(el) res.push({id:i, name:el.name});
 			}
 			setTimeout(function(){
 				callback(res);
@@ -33,11 +33,16 @@ var DB = (function(){
 		saveRecord: function(id, elData, callback){
 			var el;
 			if(id==null){
+				id = data.length;
 				el = {};
 				data.push(el);
 			}
 			else el = data[id];
 			extend(el, elData);
+			callback({id:id});
+		},
+		deleteRecord: function(id, callback){
+			data[id] = null;
 			callback({success:true});
 		}
 	};
