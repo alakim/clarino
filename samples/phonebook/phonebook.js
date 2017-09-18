@@ -55,38 +55,105 @@ var Phonebook = (function($, $C){
 				p({'class':'footer'}, 'Sample Phonebook. Powered by Clarino v.', $C.version())
 			);
 		}})());
-		db.getList(function(res){
-			if(!checkRes(res)) return;
-			$(pnl).find('.main')
-				.html((function(){with($H){
-					return markup(
-						ol({'class':'itemList'},
-							apply(res, function(el){
-								return li(
-									span({'class':'link lnkItem', 'data-id':el.id}, el.name)
-								);
-							})
-						),
-						div({'class':'detailsPanel'})
-					);
-				}})())
-				.find('.lnkItem').click(function(){
-					var id = $(this).attr('data-id');
-					var detailsPnl = $(pnl).find('.main .detailsPanel');
-					detailsPnl.html('Loading...');
-					db.getRecord(id, function(res){
-						if(!checkRes(res)) return;
-						detailsPnl.html((function(){with($H){
-							return  markup(
+		loadList();
+
+		function loadList(callback){
+			db.getList(function(res){
+				if(!checkRes(res)) return;
+				$(pnl).find('.main')
+					.html((function(){with($H){
+						return markup(
+							ol({'class':'itemList'},
+								apply(res, function(el){
+									return li(
+										span({'class':'link lnkItem', 'data-id':el.id}, el.name)
+									);
+								})
+							),
+							div({'class':'detailsPanel'})
+						);
+					}})())
+					.find('.lnkItem').click(function(){
+						var id = $(this).attr('data-id');
+						loadItem(id);
+					}).end()
+				;
+				if(callback) callback();
+			});
+		}
+		
+		function loadItem(id){
+			var detailsPnl = $(pnl).find('.main .detailsPanel');
+			detailsPnl.html('Loading...');
+			db.getRecord(id, function(res){
+				if(!checkRes(res)) return;
+				detailsPnl.html((function(){with($H){
+						return  markup(
+							div({'class':'itemCard'},
 								p('Name: ', res.name),
 								p('Phone: ', res.phone),
 								p('Room nr.: ', res.room)
-							);
-						}})());
-					});
-				}).end()
-			;
-		});
+							),
+							div({'class':'buttons'},
+								button({'class':'btEdit'}, 'Edit')
+							)
+						);
+					}})())
+					.find('.btEdit').click(function(){
+						var dlg = ModalDialog.open('itemEditDialog');
+						dlg
+							.find('.dialogTitle').html('Edit Item').end()
+							.find('.dialogContent').html((function(){with($H){
+								return table({width:pc(100), border:0},
+									tr(
+										td('Name'),
+										td(input({type:'text', 
+											'class':'tbName',
+											style:$C.formatStyle({width:pc(95)}),
+											value:res.name
+										}))
+									),
+									tr(
+										td('Phone'),
+										td(input({type:'text',
+											'class':'tbPhone',
+											style:$C.formatStyle({width:pc(95)}),
+											value:res.phone
+										}))
+									),
+									tr(
+										td('Room Nr'),
+										td(input({type:'text',
+											'class':'tbRoom',
+											style:$C.formatStyle({width:pc(95)}),
+											value:res.room
+										}))
+									)
+								);
+							}})()).end()
+							.find('.dialogButtons .customButtons')
+								.html((function(){with($H){
+									return markup(
+										button({'class':'btOK'}, 'OK')
+									);
+								}})())
+								.find('.btOK').click(function(){
+									var name = dlg.find('.dialogContent .tbName').val(),
+										phone = dlg.find('.dialogContent .tbPhone').val(),
+										room = dlg.find('.dialogContent .tbRoom').val();
+									db.saveRecord(id, {name:name, phone:phone, room:room}, function(res){
+										if(!checkRes(res)) return;
+										dlg.hide();
+										loadList(function(){
+											loadItem(id);
+										});
+									});
+								}).end()
+						;
+					}).end()
+				;
+			});
+		}
 	}
 
 	return {

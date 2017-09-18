@@ -1,5 +1,5 @@
 var DB = (function(){
-	var timeout = .5e3;
+	var timeout = .2e3;
 	var data = [
 		{name: 'John', phone:'444-44-44', room:'11'},
 		{name: 'Phill', phone:'333-33-33', room:'12'},
@@ -7,6 +7,12 @@ var DB = (function(){
 		{name: 'James', phone:'111-11-11', room:'12'},
 		{name: 'George', phone:'555-55-55', room:'15'}
 	];
+
+	function extend(o, s){
+		for(var k in s){
+			o[k] = s[k];
+		}
+	}
 
 	return {
 		getList: function(callback){
@@ -23,6 +29,16 @@ var DB = (function(){
 			setTimeout(function(){
 				callback(res);
 			}, timeout);
+		},
+		saveRecord: function(id, elData, callback){
+			var el;
+			if(id==null){
+				el = {};
+				data.push(el);
+			}
+			else el = data[id];
+			extend(el, elData);
+			callback({success:true});
 		}
 	};
 })();
