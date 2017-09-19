@@ -302,6 +302,15 @@ var Clarino = (function(){
 			style = style || Css.keywords.solid;
 			color = color || '#000';
 			return [Css.unit.px(width), style, color].join(' ');
+		},
+		linearGradient: function(angle, color1, color2){
+			return [
+				color1,
+				'-webkit-linear-gradient('+[angle+'deg', color1, color2].join(',')+')',
+				'-o-linear-gradient('+[angle+'deg', color1, color2].join(',')+')',
+				'-moz-linear-gradient('+[angle+'deg', color1, color2].join(',')+')',
+				'linear-gradient('+[angle+'deg', color1, color2].join(',')+')'
+			];
 		}
 	};
 	

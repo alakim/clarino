@@ -214,7 +214,7 @@
 				span(' вызов ', code(actionCode), ' вернет строку ', code(expected)),
 				errors.length?span({'class':'error'}, 
 					name, ' ',
-					$C.apply(errors, function(e){return div(e)})
+					$C.apply(errors, function(e){return div({'class':'error'}, e)})
 				)
 				:showTests?span({'class':'success'}, 'Test performed'):null
 
@@ -783,6 +783,7 @@
 								attention(markup('Следует обратить внимание на пробел перед селектором ', code('" .name"'), ' в исходном коде. Он важен, т.к. влияет на результат конкатенации селекторов: ', code('div.mainForm .name'), ' и ', code('div.mainForm.name'), ' - не одно и то же (см. любой справочник по CSS).'))
 							);
 						})(),
+						p('Если вместо JSON-объекта передается массив, то все содержающиеся в нем CSS-свойства будут представлены в полученной CSS-таблице (подробнее см. описание функции ', a({href:'#css_stylesheet'}, 'Clarino.css.stylesheet()'), ').'),
 						p('Для облегчения записи имен свойств CSS, содержащих дефис, допускается записывать их без дефиса, переводя следующую за дефисом букву в верхний регистр. Например, ', code('fontWeight'), ' будет автоматически преобразовано в ', code('font-weight'), '.'),
 						p('Для облегчения работы с единицами измерения имеется метод ', a({href:'#clarino_css_unit'}, 'Clarino.css.unit()'), '.'),
 						p('Для уменьшения количества строковых констант при создании CSS-таблиц предлагается к использованию словарь ', code('Clarino.css.keywords'), ', содержащий наиболее употребительные строковые значения свойств CSS.'),
@@ -1109,6 +1110,7 @@
 					manualSection(3, 'CSS', 'csstables', div(
 						referenceManual('Clarino.css', $C.css, {
 							stylesheet: markup(
+								a({name:'css_stylesheet'}),
 								p('Формирует фрагмент CSS-кода. Получает JSON-структуру, содержащую описание стилей. Возвращает соответствующий CSS-код.'),
 								p('Пример входной структуры:'),
 								codesample([
@@ -1123,8 +1125,41 @@
 								p('Общие правила:'),
 								ul(
 									li('Если значение атрибута является объектом, то соответствующий ключ (имя атрибута) содержит CSS-селектор.'),
-									li('Если значение атрибута строка или число, то ключ является именем CSS-свойства. Если имя свойства содержит дефис, то допускается для сокращения записывать это имя слитно без дефисов, начиная каждую часть имени с заглавной буквы (см. пример выше)'),
+									li('Если значение атрибута строка или число, то ключ является именем CSS-свойства. Если имя свойства содержит дефис, то допускается для сокращения записывать это имя слитно без дефисов, начиная каждую часть имени с заглавной буквы (см. пример выше).'),
 									li('Вложенные селекторы конкатенируются. Так в приведенном выше примере из селекторов ', code('body'), ' и ', code(' p'), ' будет составлен селектор ', code(' "body p"'), '. В данном случае важен пробел перед вторым селектором.'),
+									(function(){
+										var src = [
+											'{',
+											'	"div.attention":{',
+											'		background: [',
+											'			"red",',
+											'			"-webkit-linear-gradient(left, red , yellow)",',
+											'			"-moz-linear-gradient(right, red, yellow)"',
+											'		]',
+											'	}',
+											'}'
+										].join('\n');
+										var expect = [
+											'div.attention{',
+											'	background: red;',
+											'	background: -webkit-linear-gradient(left, red , yellow);',
+											'	background: -moz-linear-gradient(right, red, yellow);',
+											'}'
+										].join('\n');
+										var srcJson = (new Function('return '+src))();
+										var sst = Clarino.css.stylesheet(srcJson);
+										return markup(
+											li('Если значение атрибута является массивом, все содержащиеся в нем значения CSS-свойства выводятся под одним именем, например, для следующего описания стилей:'),
+											test(function(){
+												var ee = expect.replace(/\s+/gi, ''),
+													ss = sst.replace(/\s+/gi, '');
+												assert(ss, ee);
+											}),
+											codesample(src),
+											p('будет сформирована следующая CSS-таблица:'),
+											codesample(expect)
+										);
+									})()
 								),
 								test("Stylesheet", "Extensions", function(){
 									var sst = Clarino.css.stylesheet({
@@ -1201,6 +1236,42 @@
 											testSample('Clarino.css.template.border(1)', '1px solid #000'),
 											'.'
 										)
+									),
+									linearGradient:markup(
+										p('Формирует кроссбраузерное описание линейного градиента.'),
+										p('Входные параметры:'),
+										ol(
+											li($C.html.b('angle'), ' - угол поворота градиента'),
+											li($C.html.b('color1'), ' - первый цвет'),
+											li($C.html.b('color2'), ' - второй цвет')
+										),
+										(function(){
+											var src = 'Clarino.css.template.linearGradient(90, "#f00", "#0f0")';
+											var expected = [
+												'#f00',
+												'-webkit-linear-gradient(90deg,#f00,#0f0)',
+												'-o-linear-gradient(90deg,#f00,#0f0)',
+												'-moz-linear-gradient(90deg,#f00,#0f0)',
+												'linear-gradient(90deg,#f00,#0f0)'
+											];
+											return markup(
+												p('Например, следующий вызов: ', code(src), ' вернет следующий массив значений: '),
+												ul(apply(expected, function(x){
+													return li(x)
+												})),
+												test(function(){
+													assert((new Function('return '+src))(), expected)
+												}),
+												p('Пример использования данного шаблона при формировании таблицы стилей:'),
+												codesample([
+													'Clarino.css.stylesheet({',
+													'	"div.attention":{',
+													'		background: Clarino.css.template.linearGradient(45, "#f00", "#fff")',
+													'	}',
+													'}'
+												])
+											);
+										})()
 									)
 								})
 							),
