@@ -295,7 +295,15 @@ var Clarino = (function(){
 		return res;
 	};
 
-	Css.keywords = Clarino.symbols('block;none;flex;row;rowReverse;column;columnReverse;left;right;center;hidden;pointer;italic;bold;normal;uppercase;lowercase;absolute;relative;fixed;underline;auto;collapse;separate;dotted;inherit;inline;default;solid;wrap;nowrap;wrapReverse;spaceBetween;spaceAround;spaceEvently;flexStart;flexEnd;baseline;stretch');
+	Css.keywords = Clarino.symbols('block;none;flex;row;rowReverse;column;columnReverse;left;right;center;hidden;pointer;italic;bold;normal;uppercase;lowercase;absolute;relative;fixed;underline;auto;collapse;separate;inline;default;solid;dotted;dashed;double;groove;ridge;inset;outset;initial;inherit;wrap;nowrap;wrapReverse;spaceBetween;spaceAround;spaceEvently;flexStart;flexEnd;baseline;stretch');
+
+	Css.template = {
+		border: function(width, color, style){
+			style = style || Css.keywords.solid;
+			color = color || '#000';
+			return [Css.unit.px(width), style, color].join(' ');
+		}
+	};
 	
 	function compareVersions(v1, v2){
 		if(v1==v2) return 0;
@@ -323,7 +331,7 @@ var Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	var topVersion = "1.0.2";
+	var topVersion = "1.0.3";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;

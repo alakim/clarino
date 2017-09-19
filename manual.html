@@ -790,7 +790,8 @@
 							'Например, ', testSample('Clarino.css.keywords.none', 'none'), ', ',
 							testSample('Clarino.css.keywords.left', 'left'), ', a',
 							testSample('Clarino.css.keywords.flexStart', 'flex-start'), '.'
-						)
+						),
+						p('Для упрощения формирования таблиц стилей предусмотрен ряд удобных шаблонов, размещенных в разделе ', a({href:'#csstemplates'},'Clarino.css.template'), '.')
 					)),
 					manualSection(3, 'Примеры', markup(
 						p('Для иллюстрации основных подходов при работе с библиотекой Clarion представлен пример реализации веб-приложения ', a({href:'samples/phonebook/index.html'}, 'Phonebook'), '. Данное приложение включает в себя макет небольшой базы данных, содержащей телефонный справочник, и имитирующей обращение к ней по Ajax. Приложение реализует простые операции просмотра и редактирования справочника. Поскольку приложение не имеет настоящей базы данных (используется лишь макет, написанный на JavaScript), результаты редактирования не сохраняются, и при перезагрузке веб-страницы они будут потеряны.'),
@@ -1180,6 +1181,27 @@
 									testSample('Clarino.css.keywords.absolute', 'absolute'), ', а ',
 									testSample('Clarino.css.keywords.spaceBetween', 'space-between'), '.'
 								)
+							),
+							template: markup(
+								a({name:'csstemplates'}),
+								p('Содержит ряд шаблонов для формирования фрагментов CSS-кода.'),
+								referenceManual('Clarino.css.template', $C.css.template, {
+									border:markup(
+										p('Формирует описание стиля рамки.'),
+										p('Входные параметры:'),
+										ol(
+											li($C.html.b('width'), ' - ширина рамки в пикселях'),
+											li($C.html.b('color'), ' - цвет рамки (необязательный)'),
+											li($C.html.b('style'), ' - стиль рамки (необязательный)')
+										),
+										p('Например, ', 
+											testSample('Clarino.css.template.border(1, "#f00", "solid")', '1px solid #f00'),
+											', а при использовании параметров по умолчанию, ',
+											testSample('Clarino.css.template.border(1)', '1px solid #000'),
+											'.'
+										)
+									)
+								})
 							),
 							/* *************************
 							rules: markup(
