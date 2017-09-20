@@ -422,7 +422,7 @@
 						p('В приведенном примере, в зависимости от значения параметра ', code('attention'), ' при вызове функции будет сформирован следующий код: '),
 						ul(
 							li(code('<div style="color:red;">This is an important message</div>'), ', если ', code('attention==true')),
-							li(code('<div>This is a message</div>'), ', если ', code('attention==false')),
+							li(code('<div>This is a message</div>'), ', если ', code('attention==false'))
 						),
 						attention(markup('При формировании HTML-кода значение ', code('null'), ' преобразуется в пустую строку.')),
 						test("Arbitrary Attributes", "Верстка", function(){
@@ -1010,8 +1010,8 @@
 										span({"class":"TEditLinkButton", onclick:callFunction("action", idx, id, name)}, name),
 										"<span class=\"TEditLinkButton\" onclick=\"action(1,2,'ОАО \\\"Персей\\\"')\">ОАО \"Персей\"</span>"
 									);
-								}}),
-								),
+								}})
+							),
 							json: markup(
 								p('Сериализует заданный объект в строку JSON'),
 								test("JSON serialization", "Formatting", function(){ with(Clarino.simple){
@@ -1070,7 +1070,7 @@
 									delete Clarino.html.ssl;
 									delete Clarino.html.ss;
 									delete Clarino.html._interface;
-								}}),
+								}})
 							),
 							getTagDefinitions: markup(
 								a({name:'clarino_gettagdefinitions'}),
@@ -1300,9 +1300,9 @@
 			);
 		}}
 
-		function buildToc(root){with($H){
+		function buildToc(root){
 			root = root || $('.manual');
-			function tocLevel(root){
+			function tocLevel(root){with($H){
 				var content = root.find('>.sectionContent');
 				if(!content.length) content = root;
 				var sections = content.find('>.section').toArray();
@@ -1317,11 +1317,11 @@
 						);
 					})
 				);
-			}
+			}}
 			var hcode = tocLevel(root);
 			//console.log(hcode);
 			$('.pnlToc').html(hcode);
-		}}
+		}
 
 		function bindEvents(){
 			$('.manual')
