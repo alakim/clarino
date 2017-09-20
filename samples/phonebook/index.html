@@ -7,27 +7,24 @@
 		body{
 			font-family: Verdana, Arial, Sans-Serif;
 			font-size:14px;
-			color: #ccf;
-			background-color: #001;
 		}
 	</style>
 	<script src="../../tools/jquery-3.1.1.min.js"></script>
 	<script src="../../clarino.min.js"></script>
+	
+	<!-- Модули веб-приложения: -->
 	<script src="modaldialog.js"></script>
 	<script src="phonebook.js"></script>
 	<script src="mockdb.js"></script>
+	<script src="skins.js"></script>
+
 	<script>
 		$(function(){
+			// Инициализация компонента 
 			Phonebook.init('#phonebook', DB);
 		});
 	</script>
-	<style>
-		/* кастомизируем отображение компонента phonebook */
-		div.phonebook p.footer{
-			color: #08f;
-			border-color: #08f;
-		}
-	</style>
+	<style id="skin"></style><!-- Сюда будут выводиться стили для скинов -->
 </head>
 <body>
 	<h1>Phonebook sample</h1>

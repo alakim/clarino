@@ -1,4 +1,8 @@
+//
+// Модальный диалог
+//
 var ModalDialog = (function($, $C){
+	// Настройки модуля
 	var Settings = {
 		size:{w:500, h:300},
 		color:{
@@ -8,16 +12,15 @@ var ModalDialog = (function($, $C){
 		}
 	};
 
+	// Для удобства объявляем короткие имена
+	// для используемых объектов
 	var $H = $C.simple,
 		css = $C.css.keywords,
 		px = $C.css.unit.px,
 		pc = $C.css.unit.pc
 	;
 
-	function solidBorder(width, color){
-		return px(width)+' solid '+color;
-	}
-
+	// Базовые стили отображения компонента
 	$C.css.writeStylesheet({
 		'.modalDialog':{
 			position: css.fixed,
@@ -29,14 +32,14 @@ var ModalDialog = (function($, $C){
 				backgroundColor:Settings.color.white,
 				color: Settings.color.black,
 				width:px(Settings.size.w),
-				border: solidBorder(1, Settings.color.gray),
+				border: $C.css.template.border(1, Settings.color.gray),
 				borderRadius: px(5),
 				margin: px(200, css.auto),
 				' .dialogTitle':{
 					fontSize:px(18),
 					textAlign: css.center,
 					padding: px(5),
-					borderBottom: solidBorder(1, Settings.color.gray)
+					borderBottom: $C.css.template.border(1, Settings.color.gray),
 				},
 				' .dialogContent':{
 					minHeight: px(Settings.size.h),
@@ -46,7 +49,7 @@ var ModalDialog = (function($, $C){
 					padding: px(5),
 					display: css.flex,
 					justifyContent: css.flexEnd,
-					borderTop: solidBorder(1, Settings.color.gray),
+					borderTop: $C.css.template.border(1, Settings.color.gray),
 					' button':{
 						margin:px(0, 10)
 					}
@@ -56,8 +59,13 @@ var ModalDialog = (function($, $C){
 	});
 	
 
+	// Открывает диалог
 	function open(id){
 		var dlg = $('#'+id);
+		// Если диалог еще ни разу не открывался,
+		// создаем соответствующие элементы,
+		// которые будут использоваться повторно
+		// при последующих обращениях
 		if(!dlg.length){
 			dlg = $((function(){with($H){
 				return div({'class':'modalDialog', id:id},
@@ -71,6 +79,7 @@ var ModalDialog = (function($, $C){
 					)
 				);
 			}})());
+			// Привязываем обработчики событий
 			dlg
 				.click(function(){
 					$(this).hide();
@@ -92,4 +101,4 @@ var ModalDialog = (function($, $C){
 	return {
 		open: open
 	};
-})(jQuery, Clarino.version('1.0.2'));
+})(jQuery, Clarino.version('1.1.0'));

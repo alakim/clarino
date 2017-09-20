@@ -1,5 +1,11 @@
+//
+// Макет базы данных
+// Имитирует задержки при работе через Ajax
+//
 var DB = (function(){
+	// Время задержки (мсек)
 	var timeout = .2e3;
+	// Содержимое БД
 	var data = [
 		{name: 'John', phone:'444-44-44', room:'11'},
 		{name: 'Phill', phone:'333-33-33', room:'12'},
@@ -8,6 +14,9 @@ var DB = (function(){
 		{name: 'George', phone:'555-55-55', room:'15'}
 	];
 
+	// Добавляет в объект 'o'
+	// данные, содержащиеся 
+	// в атрибутах объекта 's'
 	function extend(o, s){
 		for(var k in s){
 			o[k] = s[k];
@@ -15,6 +24,7 @@ var DB = (function(){
 	}
 
 	return {
+		// возвращает список контактов
 		getList: function(callback){
 			var res = [];
 			for(var el,i=0; el=data[i],i<data.length; i++){
@@ -24,12 +34,14 @@ var DB = (function(){
 				callback(res);
 			}, timeout);
 		},
+		// возвращает данные отдельной записи
 		getRecord: function(id, callback){
 			var res = data[id];
 			setTimeout(function(){
 				callback(res);
 			}, timeout);
 		},
+		// сохраняет данные записи
 		saveRecord: function(id, elData, callback){
 			var el;
 			if(id==null){
@@ -39,11 +51,16 @@ var DB = (function(){
 			}
 			else el = data[id];
 			extend(el, elData);
-			callback({id:id});
+			setTimeout(function(){
+				callback({id:id});
+			}, timeout);
 		},
+		// Удаляет запись
 		deleteRecord: function(id, callback){
 			data[id] = null;
-			callback({success:true});
+			setTimeout(function(){
+				callback({success:true});
+			}, timeout);
 		}
 	};
 })();

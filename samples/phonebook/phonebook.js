@@ -1,22 +1,20 @@
+//
+// Основной модуль приложения "Телефонная книга"
+// 
 var Phonebook = (function($, $C){
 	var $H = $C.simple,
 		css = $C.css.keywords,
 		px = $C.css.unit.px,
 		pc = $C.css.unit.pc;
 
-	var Styles = {
-		color:{
-			footer: '#888'
-		}
-	};
-
+	// Базовые стили оформления - могут переопределяться при использовании компонента
 	$C.css.writeStylesheet({
 		'.phonebook':{
 			' .link':{
 				cursor: css.pointer,
-				color: '#0ff',
+				color: '#008',
 				':hover':{
-					color:'#aff',
+					color:'#04a',
 					textDecoration: css.underline
 				}
 			},
@@ -27,13 +25,10 @@ var Phonebook = (function($, $C){
 					width: px(200)
 				},
 				' .detailsPanel':{
-					//'float':css.right,
 					width: px(500)
 				}
 			},
 			' .footer':{
-				color: Styles.color.footer,
-				borderTop: px(1)+' solid '+Styles.color.footer,
 				padding: px(5),
 				margin: px(15),
 				fontSize:pc(90),
@@ -43,26 +38,59 @@ var Phonebook = (function($, $C){
 		}
 	});
 
+	// Проверка результата Ajax-запроса
 	function checkRes(res){
 		if(!res) return false;
 		if(res.error){alert('Error: '+res.error); return false;}
 		return true;
 	}
 
+	// Применяет заданный стиль оформления
+	function applySkin(skinID){
+		skinID = skinID || $('.selSkin').val();
+		for(var k in Skins){
+			var sk = Skins[k];
+			if(sk.current && sk.finalize) sk.finalize();
+			sk.current = false;
+		}
+		var skin = Skins[skinID];
+		$('#skin').html(
+			$C.css.stylesheet(skin.stylesheet)
+		);
+		skin.current = true;
+		if(skin.init) skin.init();
+	}
+
+	// Инициализация компонента
 	function init(pnl, db){
 		$(pnl).html((function(){with($H){
 			return div({'class':'phonebook'},
+				div('Skin: ', select({id:'selSkin'})),
 				div({'class':'main'}, 'Loading ...'),
 				p({'class':'footer'}, 'Sample Phonebook. Powered by Clarino v.', $C.version())
 			);
 		}})());
+		
+		// Инициализация селектора скинов
+		$('#selSkin').html((function(){with($H){
+			return apply(Skins, function(skin, id){
+				return option({value:id}, skin.name);
+			});
+		}})()).change(function(){
+			applySkin($(this).val());
+		});
+		applySkin('light');
+
+		// Загружаем список контактов
 		loadList();
 
+		// Выполняет загрузку списка контактов
 		function loadList(callback){
 			db.getList(function(res){
 				if(!checkRes(res)) return;
 				$(pnl).find('.main')
 					.html((function(){with($H){
+						// Шаблон вывода списка
 						return markup(
 							div({'class':'itemList'},
 								ol(
@@ -79,6 +107,7 @@ var Phonebook = (function($, $C){
 							div({'class':'detailsPanel'})
 						);
 					}})())
+					// Привязка обработчиков событий
 					.find('.lnkItem').click(function(){
 						var id = $(this).attr('data-id');
 						loadItem(id);
@@ -91,10 +120,15 @@ var Phonebook = (function($, $C){
 			});
 		}
 		
+		// Открывает диалог редактирования записи телефонной книги 
 		function openItemDialog(id, itemData){
 			itemData = itemData || {name:'', phone:'', room:''};
 
 			var dlg = ModalDialog.open('itemEditDialog');
+			// При каждом открытии диалога формируем его содержимое заново.
+			// Это исключает возможность ошибок, связанных с влиянием
+			// предыдущего его состояния, кроме того, в более сложных приложениях
+			// для разных редактируемых элементов содержимое диалога может сильно различаться
 			dlg
 				.find('.dialogTitle').html((id?'Edit':'Add')+' Item').end()
 				.find('.dialogContent').html((function(){with($H){
@@ -116,7 +150,7 @@ var Phonebook = (function($, $C){
 							}))
 						),
 						tr(
-							td('Room Nr'),
+							td('Room number'),
 							td(input({type:'text',
 								'class':'tbRoom',
 								style:$C.formatStyle({width:pc(95)}),
@@ -156,17 +190,19 @@ var Phonebook = (function($, $C){
 			;
 		}
 		
+		// Загрузка данных записи телефонной книги
 		function loadItem(id){
 			var detailsPnl = $(pnl).find('.main .detailsPanel');
 			detailsPnl.html('Loading...');
 			db.getRecord(id, function(res){
 				if(!checkRes(res)) return;
 				detailsPnl.html((function(){with($H){
+						// шаблон для отображения данных
 						return  markup(
 							div({'class':'itemCard'},
 								p('Name: ', res.name),
 								p('Phone: ', res.phone),
-								p('Room nr.: ', res.room)
+								p('Room number: ', res.room)
 							),
 							div({'class':'buttons'},
 								button({'class':'btEdit'}, 'Edit')
@@ -184,4 +220,4 @@ var Phonebook = (function($, $C){
 	return {
 		init: init
 	};
-})(jQuery, Clarino.version('1.0.2'));
+})(jQuery, Clarino.version('1.1.0'));
