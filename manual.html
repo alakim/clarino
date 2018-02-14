@@ -79,9 +79,76 @@
 					border: px(1)+' solid #f00'
 				},
 				' .success':{color:'#080'},
-				' .error':{color:'#e00'}
+				' .error':{color:'#e00'},
+				' .skinSelector':{
+					position:css.fixed,
+					top:px(10),
+					left:'calc(100vw - 250px)'
+				}
 			}
 		});
+
+		var Skins = {
+			default:{
+				name:'светлое',
+				styles:{}
+			},
+			dark:(function(){
+				var color = {
+					back:'#012',
+					text:'#eef',
+					nav:{
+						back:'#88a',
+						text:'#002'
+					},
+					link:{
+						lo:'#efe',
+						hi:'#bfb'
+					},
+					code:{
+						back:'#283035',
+						text:'#eef'
+					}
+				};
+				return {
+					name:'темное',
+					styles:{
+						'body':{
+							backgroundColor:color.back,
+							color:color.text,
+							' .manual':{
+								' a':{
+									':link':{color:color.link.lo},
+									':visited':{color:color.link.lo},
+									':hover':{color:color.link.hi}
+								},
+								' .navbar':{
+									backgroundColor:color.nav.back,
+									color:color.nav.text,
+									' a':{
+										':link':{color:color.nav.text},
+										':visited':{color:color.nav.text},
+										':hover':{color:color.nav.text}
+									}
+								},
+								' .code':{
+									backgroundColor:color.code.back,
+									color:color.code.text
+								},
+								' div.attention':{
+									color:'#ffc'
+								},
+								' div.error':{
+									backgroundColor:'#ff0',
+									border:$C.css.template.border(2, '#f00'),
+									padding:px(5)
+								}
+							}
+						}
+					}
+				};
+			})()
+		};
 
 		var uid = (function(){
 			var counter = 1;
@@ -251,10 +318,22 @@
 			);
 		}}
 
+		function skinSelector(){with($H){
+			return div({'class':'skinSelector'},
+				'Оформление ',
+				select(
+					apply(Skins, function(s, k){
+						return option({value:k}, s.name);
+					})
+				)
+			);
+		}}
+
 		function manual(){with($H){
 			var markup = $C.markup;
 			return div({'class':'manual'},
 				h1(Settings.title),
+				skinSelector(),
 				p('Сайт проекта: ', a({href:'http://github.com/alakim/clarino'}, 'http://github.com/alakim/clarino'), '.'),
 				div({'class':'error pnlErrorsDetected'}, 'Обнаружены ошибки'),
 				a({name:'toc'}),
@@ -1336,19 +1415,35 @@
 						pnl.fadeIn();
 					}
 				}).end()
+				.find('.skinSelector select').change(function(){
+					var skinID = $(this).val();
+					setSkin(skinID);
+					localStorage.setItem('clarinoManualSkin', skinID);
+				}).end()
 			;
 		}
 
+		function setSkin(skinID){
+			$('#skin').html($C.css.stylesheet(Skins[skinID].styles));
+		}
+
+		function initSkin(){
+			var skinID = localStorage.getItem('clarinoManualSkin') || 'default';
+			setSkin(skinID);
+			$('.manual .skinSelector select').val(skinID);
+		}
 
 		$(function(){
 			$('head title').html(Settings.title);
 			$('body').html(manual());
 			bindEvents();
 			buildToc();
+			initSkin();
 			if(errorsDetected) $('.pnlErrorsDetected').show();
 		});
 	})(jQuery, Clarino.version('0.1.0'));
 	</script>
+	<style id="skin"></style>
 </head>
 <body></body>
 </html>
