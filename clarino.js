@@ -122,6 +122,18 @@ var Clarino = (function(){
 				.replace(/\"/g, '&quot;')
 				.replace(/\'/g, '&apos;');
 		},
+
+		decodeEntities: function(str){
+			if(!str) return '';
+			str = str.toString();
+			return str
+				.replace(/\&lt;/g, '<')
+				.replace(/\&gt;/g, '>')
+				.replace(/&quot;/g, '"')
+				.replace(/&apos;/g, "'")
+				.replace(/\&amp;/g, '&')
+			;
+		},
 		
 		tag: tag,
 		
@@ -340,7 +352,7 @@ var Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	var topVersion = "1.1.0";
+	var topVersion = "1.2.0";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
@@ -355,7 +367,7 @@ var Clarino = (function(){
 	extend(Clarino, intf);
 	Clarino.html = Html;
 	Clarino.css = Css;
-	Clarino.simple = compose('markup;apply;repeat;format;formatStyle;entities;callFunction');
+	Clarino.simple = compose('markup;apply;repeat;format;formatStyle;entities;decodeEntities;callFunction');
 	//var simpleHtml = compose('html.div');
 	var simpleHtml = compose('html.div;html.a;html.p;html.span;html.nobr;html.hr;html.br;html.img;html.ul;html.ol;html.li;html.table;html.tbody;html.thead;html.tr;html.td;html.th;html.input;html.label;html.textarea;html.pre;html.select;html.option;html.optgroup;html.h1;html.h2;html.h3;html.h4;html.h5;html.h6;html.button;html.form;html.dl;html.dt;html.dd');
 	extend(Clarino.simple, simpleHtml);

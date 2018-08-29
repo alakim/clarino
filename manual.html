@@ -1067,6 +1067,16 @@
 									assert(entities('<p>xxx&yyy "aaa" \'b</p>'), '&lt;p&gt;xxx&amp;yyy &quot;aaa&quot; &apos;b&lt;/p&gt;');
 								}})
 							),
+							decodeEntities:markup(
+								p('Преобразует коды HTML-сущностей в соответствующие символы.'),
+								p('Например: ', testSample('Clarino.decodeEntities("a&lt;b")', 'a<b'), '.'),
+								test('Decoding entities', 'Formatting', function(){with(Clarino.simple){
+									assert(decodeEntities('a&lt;b'), 'a<b');
+									assert(decodeEntities('a&lt;b&gt;c'), 'a<b>c');
+									assert(decodeEntities('&amp;a&lt;b&gt;c'), '&a<b>c');
+									assert(decodeEntities('&quot;a&lt;b&gt;c&apos;'), '"a<b>c\'');
+								}})
+							),
 							callFunction: markup(
 								p('Формирует строку вызова функции для привязки обработчика события к HTML-элементу'),
 								p('При вызове передаются имя вызываемой функции, и список ее аргументов.'),
