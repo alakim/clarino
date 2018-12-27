@@ -1129,33 +1129,18 @@
 							defineTags: markup(
 								p('Создает дополительные определения тегов в разделе Clarino.html.'),
 								p('Получает строку, содержащую имена тегов, разделенных точкой с запятой.'),
-								attention('Если имя тега совпадает с зарезервированным словом JavaScript, имя такого тега должно предваряться символом подчеркивания.'),
+								p('Для тегов со сложными именами (например, когда имя тега содержит ссылку на пространство имен) можно задавать алиасы, указывая их перед именем, отделяя вертикальной чертой: ', code('row|xs:row'), '.'),
 								test("Tag Definitions", "Extensions", function(){ with(Clarino.simple){
-									Clarino.defineTags("ss;ssl");
+									Clarino.defineTags("ss;ssl;xx|xs:xx");
 									var html = (function(){with(Clarino.html){
 										return ss(
 											ssl("abc"),
 											ssl("def"),
+											xx(22),
 											p("ghi")
 										);
 									}})();
-									assert(html, "<ss><ssl>abc</ssl><ssl>def</ssl><p>ghi</p></ss>");
-									delete Clarino.html.ssl;
-									delete Clarino.html.ss;
-									delete Clarino.html._interface;
-								}}),
-
-								test("Tag Definitions 2", "Extensions", function(){ with(Clarino.simple){
-									Clarino.defineTags(["ss", "ssl", "_interface"]);
-									var html = (function(){with(Clarino.html){
-										return ss(
-											ssl("abc"),
-											ssl("def"),
-											p("ghi"),
-											_interface("zz")
-										);
-									}})();
-									assert(html, "<ss><ssl>abc</ssl><ssl>def</ssl><p>ghi</p><interface>zz</interface></ss>");
+									assert(html, "<ss><ssl>abc</ssl><ssl>def</ssl><xs:xx>22</xs:xx><p>ghi</p></ss>");
 									delete Clarino.html.ssl;
 									delete Clarino.html.ss;
 									delete Clarino.html._interface;
@@ -1165,7 +1150,7 @@
 								a({name:'clarino_gettagdefinitions'}),
 								p('Получает строку, содержащую имена определяемых тегов, разделенные точками с запятой'),
 								p('Возвращает объект, содержащий методы, соответствующие определяемым тегам.'),
-								attention('Если имя тега совпадает с зарезервированным словом JavaScript, имя такого тега должно предваряться символом подчеркивания.'),
+								p('Для тегов со сложными именами (например, когда имя тега содержит ссылку на пространство имен) можно задавать алиасы, указывая их перед именем, отделяя вертикальной чертой: ', code('row|xs:row'), '.'),
 								test("Document type definition", "XML", function(){ with(Clarino.simple){
 									var xml = (function(){with(Clarino.getTagDefinitions("library;book")){
 										return library(
@@ -1183,7 +1168,14 @@
 										);
 									}})();
 									assert(xml, "<library><book title=\"Война и мир\"/><book title=\"Капитанская дочка\"/></library>");
-								}})
+								}}),
+								test('Document type definition 3', 'XML', function(){
+									var xDef = Clarino.getTagDefinitions('data;row|xs:row');
+									var xml = xDef.data(
+										xDef.row('abc')
+									);
+									assert(xml, '<data><xs:row>abc</xs:row></data>');
+								})
 							),
 							symbols: markup(
 								p('Создает структуру для хранения строковых констант.'),

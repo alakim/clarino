@@ -50,13 +50,22 @@ var Clarino = (function(){
 		else
 			return "<"+name+a.join("")+">"+h+"</"+name+">";
 	}
-	
+
+	function getAlias(def){
+		def = def.split('|');
+		return{
+			alias:def[0],
+			name:def[def.length==2?1:0]
+		};
+	}
+
 	function defineTags(tags, selfClosing, notEmpty){
 		if(!(tags instanceof Array)) tags = tags.split(";");
 		each(tags, function(t){
-			var tN = t.indexOf("_")==0?t.slice(1):t;
-			Html[t] = function(content){
-				return tag(tN, arguments, selfClosing, notEmpty);
+			//var tN = t.indexOf("_")==0?t.slice(1):t;
+			var tN = getAlias(t);
+			Html[tN.alias] = function(content){
+				return tag(tN.name, arguments, selfClosing, notEmpty);
 			}
 		});
 	}
@@ -189,7 +198,10 @@ var Clarino = (function(){
 			if(!(tags instanceof(Array)))tags=tags.split(";");
 			function defTag(nm){return function(){return Clarino.tag(nm, arguments, true);}}
 			var res = {}
-			for(var i=0,t; t=tags[i],i<tags.length; i++) res[t] = defTag(t);
+			for(var i=0,t; t=tags[i],i<tags.length; i++){
+				var tN = getAlias(t);
+				res[tN.alias] = defTag(tN.name);
+			}
 			return res;
 		}
 	});
@@ -352,7 +364,7 @@ var Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	var topVersion = "1.2.0";
+	var topVersion = "1.3.0";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
