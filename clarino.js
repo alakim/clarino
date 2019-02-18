@@ -337,6 +337,19 @@ var Clarino = (function(){
 			];
 		}
 	};
+
+	Clarino.form = function(container, template, events){
+		if(typeof(container)=='string') container = document.querySelector(container);
+		container.innerHTML = template();
+		for(let eventNm in events){
+			const targets = events[eventNm];
+			container['on'+eventNm] = function(ev){
+				for(let trgSel in targets){
+					if(ev.target.matches(trgSel)) targets[trgSel](ev);
+				}
+			}
+		}
+	};
 	
 	function compareVersions(v1, v2){
 		if(v1==v2) return 0;
@@ -364,7 +377,7 @@ var Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	var topVersion = "1.3.0";
+	var topVersion = "2.0.0";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;

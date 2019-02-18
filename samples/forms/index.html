@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Clarino Forms Sample</title>
+	<style>
+		body{
+			font-family:Verdana, Arial, Sans-Serif;
+			background-color:#012;
+			color:#ffe;
+		}
+	</style>
+	<script src="../../clarino.js"></script>
+	<script>
+		const $C = Clarino.version('2.0.0'),
+			$H = $C.simple;
+
+		const btName = (function(){
+			let counter = 1;
+			return function(){
+				return 'Button '+(counter++);
+			};
+		})();
+		window.addEventListener('load', function(){
+			$C.form(
+				'#myForm', // container: DOM node or query selector
+				function(){ // HTML template
+					const {markup,repeat,div,button} = $H;
+					return div(
+						button({'class':'btAddButtons'}, 'Add small buttons'),
+						div({'class':'pnlSmallButtons'},
+							repeat(3, i=>button({'class':'btSmall'}, btName()))
+						)
+					);
+				},
+				{ // handlers for various events
+					click:{ // onclick handlers
+						'.btAddButtons':function(){ // fires when .btAddButtons clicked
+							document.querySelector('#myForm .pnlSmallButtons').insertAdjacentHTML('beforeend', $H.markup(
+								$H.repeat(3, i=>$H.button({'class':'btSmall'}, btName()))
+							));
+						},
+						'.btSmall':function(ev){ // handlers even for buttons not yet created
+							console.log('Small button "'+(ev.target.innerText)+'" clicked!');
+						}
+					}
+				}
+			);
+		});
+	</script>
+</head>
+<body>
+	<h1>Clarino Forms Sample</h1>
+	<p>Using Clarino without jQuery.</p>
+	<div id="myForm"></div>
+</body>
+</html>
