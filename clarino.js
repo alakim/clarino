@@ -341,11 +341,16 @@ var Clarino = (function(){
 	Clarino.form = function(container, template, events){
 		if(typeof(container)=='string') container = document.querySelector(container);
 		container.innerHTML = template();
-		for(let eventNm in events){
-			const targets = events[eventNm];
+		for(var eventNm in events){
+			var targets = events[eventNm];
 			container['on'+eventNm] = function(ev){
-				for(let trgSel in targets){
-					if(ev.target.matches(trgSel)) targets[trgSel](ev);
+				for(var trgSel in targets){
+					var mt = function(sel){
+						if(ev.target.matches) return ev.target.matches(sel);
+						else if(ev.target.msMatchesSelector) /*IE v9.0*/ return ev.target.msMatchesSelector(sel);
+						throw('matches method not supported');
+					}
+					if(mt(trgSel)) targets[trgSel](ev);
 				}
 			}
 		}

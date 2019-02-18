@@ -6,30 +6,41 @@
 	<style>
 		body{
 			font-family:Verdana, Arial, Sans-Serif;
+			font-size: 16px;
 			background-color:#012;
 			color:#ffe;
 		}
 	</style>
 	<script src="../../clarino.js"></script>
 	<script>
-		const $C = Clarino.version('2.0.0'),
+		var $C = Clarino.version('2.0.0'),
 			$H = $C.simple;
 
-		const btName = (function(){
-			let counter = 1;
+		var btName = (function(){
+			var counter = 1;
 			return function(){
 				return 'Button '+(counter++);
 			};
 		})();
+
+		$C.css.writeStylesheet({
+			'.btSmall':{
+				fontSize:'12px',
+				color:'#008',
+				':hover':{
+					color:'#f00'
+				}
+			}
+		});
+
 		window.addEventListener('load', function(){
 			$C.form(
 				'#myForm', // container: DOM node or query selector
 				function(){ // HTML template
-					const {markup,repeat,div,button} = $H;
-					return div(
-						button({'class':'btAddButtons'}, 'Add small buttons'),
-						div({'class':'pnlSmallButtons'},
-							repeat(3, i=>button({'class':'btSmall'}, btName()))
+					return $H.div(
+						$H.button({'class':'btAddButtons'}, 'Add small buttons'),
+						$H.div({'class':'pnlSmallButtons'},
+							$H.repeat(3, function(i){return $H.button({'class':'btSmall'}, btName());})
 						)
 					);
 				},
@@ -37,7 +48,7 @@
 					click:{ // onclick handlers
 						'.btAddButtons':function(){ // fires when .btAddButtons clicked
 							document.querySelector('#myForm .pnlSmallButtons').insertAdjacentHTML('beforeend', $H.markup(
-								$H.repeat(3, i=>$H.button({'class':'btSmall'}, btName()))
+								$H.repeat(3, function(i){return $H.button({'class':'btSmall'}, btName());})
 							));
 						},
 						'.btSmall':function(ev){ // handlers even for buttons not yet created
@@ -52,6 +63,7 @@
 <body>
 	<h1>Clarino Forms Sample</h1>
 	<p>Using Clarino without jQuery.</p>
+	<p>IE v.9.0 supported too.</p> 
 	<div id="myForm"></div>
 </body>
 </html>
