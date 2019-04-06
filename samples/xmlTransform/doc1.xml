@@ -1,9 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <library>
-	<book title="Война и мир" author="tln"/>
-	<book title="Капитанская дочка" author="pas"/>
-	<book title="Горе от ума" author="gas"/>
-	<person id="tln" name="Толстой Л.Н." years="1828-1910"/>
-	<person id="pas" name="Пушкин А.С." years="1799-1837"/>
-	<person id="gas" name="Грибоедов А.С." years="1795-1829"/>
+	<bookStore>
+		<book title="Война и мир" author="tln"/>
+		<book title="Капитанская дочка" author="pas"/>
+		<book title="Горе от ума" author="gas"/>
+	</bookStore>
+	<persons>
+		<person id="tln" name="Толстой Л.Н." years="1828-1910"/>
+		<person id="pas" name="Пушкин А.С." years="1799-1837"/>
+		<person id="gas" name="Грибоедов А.С." years="1795-1829"/>
+	</persons>
+	<subjectCatalog>
+		<subject title="Классическая литература">
+			<subject title="Русская литература"/>
+			<subject title="Зарубежная литература"/>
+		</subject>
+		<subject title="Техничеcкая литература">
+			<subject title="Механика"/>
+			<subject title="Электроника"/>
+			<subject title="Информатика">
+				<subject title="Языки программирования"/>
+				<subject title="Базы данных"/>
+				<subject title="Компьютерная графика"/>
+				<subject title="Искусственный интеллект">
+					<subject title="Экспертные системы"/>
+					<subject title="Нейронные сети"/>
+					<subject title="Распознавание образов"/>
+				</subject>
+			</subject>
+		</subject>
+	</subjectCatalog>
 </library>

@@ -36,7 +36,7 @@
 		};
 	})();
 
-	function selectChildNodes(rootNode, F){ // selects from direct childs only
+	function selectChildNodes(rootNode, F){ // selects from direct children only
 		const res = [];
 		if(!rootNode.childNodes) return res;
 		for(let el of rootNode.childNodes){
@@ -45,7 +45,7 @@
 		return res;
 	}
 
-	function selectNodes(rootNode, F){ // select from any ancestor nodes
+	function selectNodes(rootNode, F){ // select from any descendant node
 		const res = [];
 		if(!rootNode.childNodes) return res;
 
@@ -100,6 +100,15 @@
 	}
 
 	const templates = {
+		catalog:{ // transformation mode for subject catalog
+			subjectCatalog:el=>$H.ul(applyTemplates(el.children, templates.catalog)),
+			subject:el=>$H.li(
+				el.getAttribute('title'),
+				el.children.length?$H.ul(
+					applyTemplates(el.children, templates.catalog)
+				):null
+			)
+		},
 		bookDetails:{ // transformation mode for book details
 			person:el=>$H.markup(
 				el.getAttribute('name'),
@@ -109,7 +118,11 @@
 			)
 		},
 		default:{ // default templates 
-			library:el=>$H.table({'class':'pnlLibrary'},
+			library:el=>$H.markup(
+				applyTemplates(selectChildNodes(el, e=>e.tagName=='subjectCatalog'), templates.catalog),
+				applyTemplates(el.children)
+			),
+			bookStore:el=>$H.table({'class':'pnlLibrary'},
 				$H.tr($H.th('№'), $H.th('Название'), $H.th('Автор')),
 				applyTemplates(el.children)
 			),
@@ -120,6 +133,8 @@
 					applyTemplates(selectNodes(root, e=>e.getAttribute('id')==el.getAttribute('author')), templates.bookDetails)
 				)
 			),
+			subjectCatalog:()=>null, // not displayed in default mode
+			persons:()=>null, // not displayed in default mode
 			person:()=>null // not displayed in default mode
 		}
 	};
