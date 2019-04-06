@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library>
+	<book title="Война и мир" author="tln"/>
+	<book title="Капитанская дочка" author="pas"/>
+	<book title="Горе от ума" author="gas"/>
+	<person id="tln" name="Толстой Л.Н." years="1828-1910"/>
+	<person id="pas" name="Пушкин А.С." years="1799-1837"/>
+	<person id="gas" name="Грибоедов А.С." years="1795-1829"/>
+</library>
