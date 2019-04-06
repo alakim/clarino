@@ -11,6 +11,9 @@
 			backgroundColor:'#012',
 			color:'#ffe'
 		},
+		'span.level':{
+			border:$C.css.template.border(1, '#ffe')
+		},
 		'table':{
 			border:$C.css.template.border(1, '#fee'),
 			borderCollapse:css.collapse,
@@ -59,7 +62,22 @@
 		return res;
 	}
 
+	function ancestorNodes(thisNode, F){
+		F = F || (e=>true);
+		const res = [];
+		function walk(nd){
+			if(!nd.parentNode || !nd.parentNode.tagName) return;
+			if(F(nd.parentNode)) res.push(nd.parentNode);
+			walk(nd.parentNode);
+		}
+		walk(thisNode);
+		res.reverse();
+		//console.log(thisNode, res);
+		return res;
+	}
+
 	function precedingNodes(thisNode, F){
+		F = F || (e=>true);
 		const res = [];
 		if(!thisNode) return res;
 		let thisFound = false;
@@ -99,10 +117,20 @@
 		return tpl(el);
 	}
 
+
+	function serialNumber(el){ // serial number among siblings
+		return precedingNodes(el, e=>e.tagName==el.tagName).length+1;
+	}
+
+	function level(el, F){
+		return ancestorNodes(el, F).length + 1;
+	}
+
 	const templates = {
 		catalog:{ // transformation mode for subject catalog
 			subjectCatalog:el=>$H.ul(applyTemplates(el.children, templates.catalog)),
 			subject:el=>$H.li(
+				$H.span({'class':'level', title:'Subject level'}, level(el, e=>e.tagName=='subject')), ' ',
 				el.getAttribute('title'),
 				el.children.length?$H.ul(
 					applyTemplates(el.children, templates.catalog)
@@ -127,7 +155,7 @@
 				applyTemplates(el.children)
 			),
 			book:el=>$H.tr({'class':'book'},
-				$H.td(precedingNodes(el, e=>e.tagName=='book').length+1),
+				$H.td(serialNumber(el)),
 				$H.td(el.getAttribute('title')),
 				$H.td(
 					applyTemplates(selectNodes(root, e=>e.getAttribute('id')==el.getAttribute('author')), templates.bookDetails)
