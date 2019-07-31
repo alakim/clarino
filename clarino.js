@@ -25,6 +25,18 @@ var Clarino = (function(){
 		if(!coll) return;
 		if(coll instanceof Array)
 			for(var i=0; i<coll.length; i++){F(coll[i], i);}
+		else if(Array.from && coll instanceof Map){
+			var keys = Array.from(coll.keys());
+			for(var k,i=0; k=keys[i], i<keys.length; i++){
+				F(coll.get(k), k);
+			}
+		}
+		else if(Array.from && coll instanceof Set){
+			var items = Array.from(coll);
+			for(var k,i=0; k=items[i], i<items.length; i++){
+				F(k,i);
+			}
+		}
 		else
 			for(var k in coll){F(coll[k], k);}
 	}
@@ -364,7 +376,7 @@ var Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	var topVersion = "1.3.0";
+	var topVersion = "1.4.0";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
