@@ -1,4 +1,4 @@
-
+#coding:utf8
 class Clarino:
 	@staticmethod
 	def tagContent(nm, content):
@@ -13,7 +13,9 @@ class Clarino:
 		inner = ''
 		for e in content:
 			if not(type(e) is dict):
-				inner+=e.__str__()
+				#inner+=e.__str__()
+				#print('e: '+e);
+				inner+=e.encode('utf-8', 'ignore').decode('utf-8') #.strip()
 		return head+'>'+inner+tail
 
 	@staticmethod
