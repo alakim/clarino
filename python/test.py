@@ -11,8 +11,10 @@ C = Clarino
 div = C.tag('div')
 p = C.tag('p')
 span = C.tag('span')
+img = C.tag('img')
 
 print(C.markup(
+	img({'src':'pict.png'}),
 	div(
 		p({'class':'attention', 'id':'att1'}, 'abc'),
 		p('count: ', 5, ' items'),

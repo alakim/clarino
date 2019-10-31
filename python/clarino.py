@@ -10,13 +10,17 @@ class Clarino:
 
 		tail = '</%s>'%nm;
 		# inner = ''.join(list(map(lambda e:e.__str__(), content)))
+
 		inner = ''
 		for e in content:
 			if not(type(e) is dict):
 				#inner+=e.__str__()
 				#inner+=e.encode('utf-8', 'ignore').decode('utf-8') #.strip()
 				inner+=e.__str__().encode('utf-8', 'ignore').decode('utf-8') #.strip()
-		return head+'>'+inner+tail
+		if len(inner)>0:
+			return head+'>'+inner+tail
+		else:
+			return head+'/>'
 
 	@staticmethod
 	def tag(nm):
