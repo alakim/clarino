@@ -14,8 +14,8 @@ class Clarino:
 		for e in content:
 			if not(type(e) is dict):
 				#inner+=e.__str__()
-				#print('e: '+e);
-				inner+=e.encode('utf-8', 'ignore').decode('utf-8') #.strip()
+				#inner+=e.encode('utf-8', 'ignore').decode('utf-8') #.strip()
+				inner+=e.__str__().encode('utf-8', 'ignore').decode('utf-8') #.strip()
 		return head+'>'+inner+tail
 
 	@staticmethod
@@ -36,4 +36,10 @@ class Clarino:
 		for e in coll:
 			s = s+templ(e)
 		return s
-	
+
+	@staticmethod
+	def markup(*content):
+		inner = ''
+		for e in content:
+			inner+=e.__str__().encode('utf-8', 'ignore').decode('utf-8') #.strip()
+		return inner

@@ -12,11 +12,14 @@ div = C.tag('div')
 p = C.tag('p')
 span = C.tag('span')
 
-print(div(
-	p({'class':'attention', 'id':'att1'}, 'abc'),
-	p('count: ', 5, ' items'),
-	C.repeat(2, lambda i:span('#'+i.__str__())),
-	C.apply(ccc, lambda e:div(e))
+print(C.markup(
+	div(
+		p({'class':'attention', 'id':'att1'}, 'abc'),
+		p('count: ', 5, ' items'),
+		C.repeat(2, lambda i:span('#'+i.__str__())),
+		C.apply(ccc, lambda e:div(e))
+	),
+	div('another div')
 ))
 
 print 'Done';
