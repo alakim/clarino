@@ -296,6 +296,16 @@ var Clarino = (function(){
 		document.write(Css.stylesheet(css));
 		document.write('\n</style>\n');
 	}
+
+	Css.addStylesheet = function(id, styles){
+		if(document.getElementById(id)) {
+			console.warn('Stylesheet #%s already exists', id);
+			return;
+		}
+		document.getElementsByTagName('head')[0].innerHTML+=$C.html.style({id:id},
+			$C.css.stylesheet(styles)
+		);
+	}
 	
 	Css.unit = function(name){
 		function format(v){
@@ -376,7 +386,7 @@ var Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	var topVersion = "1.4.0";
+	var topVersion = "1.5.0";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
