@@ -302,8 +302,8 @@ var Clarino = (function(){
 			console.warn('Stylesheet #%s already exists', id);
 			return;
 		}
-		document.getElementsByTagName('head')[0].innerHTML+=$C.html.style({id:id},
-			$C.css.stylesheet(styles)
+		document.getElementsByTagName('head')[0].innerHTML+=Clarino.html.style({id:id},
+			Clarino.css.stylesheet(styles)
 		);
 	}
 	
