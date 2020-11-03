@@ -85,16 +85,26 @@
 	function itemDialog(itm){
 		const dlg = modalDialog('itemDialog', 'Item properties');
 
+		let valid = true;
 		const state = new Proxy({name: itm.innerHTML}, {
 			set: function(o,k,v){
 				o[k] = v;
-				validate[k](v);
+				valid = validate[k](v);
 			}
 		});
 
 		const validate = {
+			_all: function(){
+				for(let k in validate){
+					if(k==='_all') continue;
+					valid = validate[k](state[k]);
+					if(!valid) return;
+				}
+				valid = true;
+			},
 			name: function(val){
-				if(val.length<1) alert('Validation error: empty name');
+				if(val.length<1) {alert('Validation error: empty name'); return false;}
+				return true;
 			}
 		};
 
@@ -116,6 +126,8 @@
 			),
 			{
 				'.btSave':{'click':function(){
+					validate._all();
+					if(!valid) return;
 					dlg.remove();
 					itm.innerHTML = state.name;
 				}}
