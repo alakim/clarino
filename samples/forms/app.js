@@ -9,6 +9,9 @@
 			width: px(800),
 			border: border(1, '#ffe'),
 			padding: px(13),
+			' h2':{
+				margin:px(0, 0, 12)
+			},
 			' .item':{
 				padding: px(5),
 				margin: px(3),
@@ -50,7 +53,7 @@
 		}
 	});
 
-	function modalDialog(id, title){
+	function modalDialog(id, title, locale){
 		const {markup,div,span,button} = $H;
 		const dlg = document.createElement('DIV');
 		dlg.setAttribute('id', id);
@@ -64,15 +67,15 @@
 					div({'class':'dlgContent'}),
 					div({'class':'dlgButtons'},
 						span({'class':'custom'}),
-						button({'class':'btClose'}, 'Cancel')
+						button({'class':'btClose'}, locale===tLocale.ru?'Отмена':'Cancel')
 					)
 				)
 			),
 			{
-				'.dlgBody':{'click': function(ev){
+				'.dlgBody':{click: function(ev){
 					ev.stopPropagation();
 				}},
-				'.btClose':{'click':function(){
+				'.btClose':{click:function(){
 					dlg.remove();
 				}}
 			}
@@ -82,8 +85,10 @@
 		return dlg;
 	}
 
-	function itemDialog(itm){
-		const dlg = modalDialog('itemDialog', 'Item properties');
+	const tLocale = $C.enumeration('en;ru');
+
+	function itemDialog(itm, locale){
+		const dlg = modalDialog('itemDialog', locale===tLocale.ru?'Свойства элемента':'Item properties', locale);
 
 		let valid = true;
 		const state = new Proxy({name: itm.innerHTML}, {
@@ -103,7 +108,7 @@
 				valid = true;
 			},
 			name: function(val){
-				if(val.length<1) {alert('Validation error: empty name'); return false;}
+				if(val.length<1) {alert(locale===tLocale.ru?'Ошибка валидации: следует указать название':'Validation error: empty name'); return false;}
 				return true;
 			}
 		};
@@ -111,10 +116,10 @@
 		const {markup,div,span,button,input} = $H;
 		$C.form(dlg.querySelector('.dlgContent'), 
 			markup(
-				div('Name: ', input({type:'text', 'class':'tbName', value: state.name}))
+				div(locale===tLocale.ru?'Название':'Name', ': ', input({type:'text', 'class':'tbName', value: state.name}))
 			),
 			{
-				'.tbName':{'change':function(ev){
+				'.tbName':{change:function(ev){
 					state.name = ev.target.value;
 				}}
 			}
@@ -122,10 +127,10 @@
 
 		$C.form(dlg.querySelector('.dlgButtons .custom'),
 			markup(
-				button({'class':'btSave'}, 'Save')
+				button({'class':'btSave'}, locale===tLocale.ru?'Сохранить':'Save')
 			),
 			{
-				'.btSave':{'click':function(){
+				'.btSave':{click:function(){
 					validate._all();
 					if(!valid) return;
 					dlg.remove();
@@ -136,48 +141,66 @@
 	}
 
 	window.addEventListener('load', function(){
-		const {markup,apply,repeat,div,span,input,button} = $H;
+		const {markup,apply,repeat,div,span,input,button,select,option} = $H;
 
 		let interval;
 
-		const state = new Proxy({itemCount:5}, {
-			set:function(o, k, v){
-				o[k] = v;
-				updateForm1();
-			}
-		});
+		const state = new Proxy({
+			itemCount:5,
+			locale:tLocale.en
+		}, {set:function(o, k, v){o[k] = v; updateForm1();}});
 
 		function updateForm1(){
 			const container = document.getElementById('form1');
 			$C.form(container, // or query selector '#form1',
 				div({'class':'simpleForm'},
-					div('Simple form'),
-					div('Count: ', input({'type':'text', 'class':'tbCount', value:state.itemCount})),
-					div(
-						repeat(state.itemCount, i=>div({'class':'item', 'data-idx':i}, 'Item #', i)),
+					$H.h2(
+						state.locale===tLocale.ru?'Список элементов':'Item list'
 					),
 					div(
-						button({'class':'btStart'}, 'Start'),
-						button({'class':'btStop'}, 'Stop')
+						state.locale===tLocale.ru?'Количество: ':'Count: ', 
+						input({'type':'text', 'class':'tbCount', value:state.itemCount}),
+						' ', state.locale===tLocale.ru?'Язык':'Locale', ': ',
+						select({'class':'selLocale'},
+							apply(tLocale, (v,k)=>option({value:v}, v===state.locale?{selected:true}:null, k))
+						)
+					),
+					div(
+						repeat(state.itemCount, i=>div({'class':'item', 'data-idx':i}, 
+							state.locale===tLocale.ru?'Элемент №'
+								:'Item #', 
+							i
+						)),
+					),
+					div(
+						button({'class':'btStart'}, 
+							state.locale===tLocale.ru?'Старт':'Start'
+						),
+						button({'class':'btStop'}, 
+							state.locale===tLocale.ru?'Стоп':'Stop'
+						)
 					)
 				),
 				{
 					'.tbCount':{
-						'click':function(){console.log('Count field clicked!')},
-						'change':function(ev){
+						click:function(){console.log('Count field clicked!')},
+						change:function(ev){
 							const val = ev.target.value;
 							console.log('Count changed to "%s"', val);
 							state.itemCount = parseInt(val);
 						}
 					},
+					'.selLocale':{change:function(ev){
+						state.locale = parseInt(ev.target.value);
+					}},
 					'.item':{
-						'click':function(ev){
+						click:function(ev){
 							const idx = ev.target.getAttribute('data-idx');
 							console.log(`Item #${idx} clicked!`);
-							itemDialog(ev.target);
+							itemDialog(ev.target, state.locale);
 						}
 					},
-					'.btStart':{'click':function(ev){
+					'.btStart':{click:function(ev){
 						console.log('Started!');
 						interval = setInterval(function(){
 							const activeItem = container.querySelector('.item.active');
@@ -190,7 +213,7 @@
 							}
 						}, 1e3);
 					}},
-					'.btStop':{'click':function(ev){
+					'.btStop':{click:function(ev){
 						console.log('Finished!');
 						if(interval) clearInterval(interval);
 					}}

@@ -1,7 +1,13 @@
 (function(){
 
-	Clarino.enumeration = s=>Object.freeze(s.split(';').reduce((a,e)=>(a[e]=Symbol(), a), {}));
+	Clarino.enumeration = (s,symbolic=false)=>Object.freeze(s.split(';').reduce((a,e,i)=>(a[e]=symbolic?Symbol():i, a), {}));
 	// const eTypes = Clarino.enumeration('int;float;bool');
+	// const eTypes = Clarino.enumeration('int;float;bool', true);
+	// console.log(JSON.stringify(eTypes));
+
+	Clarino.range = function*(vFrom, vTo, vStep=1){
+		for(let i=vFrom; i<=vTo; i+=vStep) yield i;
+	}
 
 	Clarino.form = function(container, markup, events){
 		if(typeof(container)==='string') container = document.querySelector(container);
