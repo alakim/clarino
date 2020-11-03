@@ -18,37 +18,131 @@
 					backgroundColor:'#0a3'
 				}
 			}
+		},
+		'.modalDialog':{
+			position: css.fixed,
+			top: 0, left:0,
+			width:'100vw', height:'100vh',
+			backgroundColor:'rgba(0, 0, 0, .7)',
+			' .dlgBody':{
+				backgroundColor:'#ccc',
+				border: border(1, '#888'),
+				width:px(600),
+				height: px(400),
+				margin: px(100, css.auto),
+				color:'#000',
+				' .dlgTitle':{
+					textAlign: css.center,
+					borderBottom: border(1, '#888'),
+					padding:px(5)
+				},
+				' .dlgContent':{
+					width: '100%',
+					height: 'calc(100% - 80px)',
+					padding: px(8)
+				},
+				' .dlgButtons':{
+					textAlign: css.right,
+					borderTop: border(1, '#888'),
+					padding:px(5, 25)
+				}
+			}
 		}
 	});
 
-	$C.form = function(container, markup, events){
-		if(typeof(container)==='string') container = document.querySelector(container);
-		if(typeof(markup)!=='string') throw 'Bad markup value: string expected';
-		if(typeof(events)!=='object') throw 'Bad events structure: object expected';
-		container.innerHTML = markup;
-		for(let sel in events){
-			const elements = container.querySelectorAll(sel),
-				handlers = events[sel];
-			for(let el of elements) for(let evt in handlers)
-				el.addEventListener(evt, handlers[evt]);
-		}
-		
+	function modalDialog(id, title){
+		const {markup,div,span,button} = $H;
+		const dlg = document.createElement('DIV');
+		dlg.setAttribute('id', id);
+		dlg.setAttribute('class', 'modalDialog');
+		dlg.addEventListener('click', function(){dlg.remove();});
+
+		$C.form(dlg, 
+			markup(
+				div({'class':'dlgBody'},
+					div({'class':'dlgTitle'}, title),
+					div({'class':'dlgContent'}),
+					div({'class':'dlgButtons'},
+						span({'class':'custom'}),
+						button({'class':'btClose'}, 'Cancel')
+					)
+				)
+			),
+			{
+				'.dlgBody':{'click': function(ev){
+					ev.stopPropagation();
+				}},
+				'.btClose':{'click':function(){
+					dlg.remove();
+				}}
+			}
+		);
+
+		document.body.append(dlg);
+		return dlg;
+	}
+
+	function itemDialog(itm){
+		const dlg = modalDialog('itemDialog', 'Item properties');
+
+		const state = new Proxy({name: itm.innerHTML}, {
+			set: function(o,k,v){
+				o[k] = v;
+				validate[k](v);
+			}
+		});
+
+		const validate = {
+			name: function(val){
+				if(val.length<1) alert('Validation error: empty name');
+			}
+		};
+
+		const {markup,div,span,button,input} = $H;
+		$C.form(dlg.querySelector('.dlgContent'), 
+			markup(
+				div('Name: ', input({type:'text', 'class':'tbName', value: state.name}))
+			),
+			{
+				'.tbName':{'change':function(ev){
+					state.name = ev.target.value;
+				}}
+			}
+		);
+
+		$C.form(dlg.querySelector('.dlgButtons .custom'),
+			markup(
+				button({'class':'btSave'}, 'Save')
+			),
+			{
+				'.btSave':{'click':function(){
+					dlg.remove();
+					itm.innerHTML = state.name;
+				}}
+			}
+		);
 	}
 
 	window.addEventListener('load', function(){
 		const {markup,apply,repeat,div,span,input,button} = $H;
 
-		let itemCount = 5;
 		let interval;
+
+		const state = new Proxy({itemCount:5}, {
+			set:function(o, k, v){
+				o[k] = v;
+				updateForm1();
+			}
+		});
 
 		function updateForm1(){
 			const container = document.getElementById('form1');
 			$C.form(container, // or query selector '#form1',
 				div({'class':'simpleForm'},
 					div('Simple form'),
-					div('Count: ', input({'type':'text', 'class':'tbCount', value:itemCount})),
+					div('Count: ', input({'type':'text', 'class':'tbCount', value:state.itemCount})),
 					div(
-						repeat(itemCount, i=>div({'class':'item', 'data-idx':i}, 'Item #', i)),
+						repeat(state.itemCount, i=>div({'class':'item', 'data-idx':i}, 'Item #', i)),
 					),
 					div(
 						button({'class':'btStart'}, 'Start'),
@@ -61,14 +155,14 @@
 						'change':function(ev){
 							const val = ev.target.value;
 							console.log('Count changed to "%s"', val);
-							itemCount = parseInt(val);
-							updateForm1();
+							state.itemCount = parseInt(val);
 						}
 					},
 					'.item':{
 						'click':function(ev){
 							const idx = ev.target.getAttribute('data-idx');
 							console.log(`Item #${idx} clicked!`);
+							itemDialog(ev.target);
 						}
 					},
 					'.btStart':{'click':function(ev){
