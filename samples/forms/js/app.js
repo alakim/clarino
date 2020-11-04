@@ -1,4 +1,4 @@
-import {$C, $H, px, css, border, Locale from './core.js'; 
+import {$C, $H, px, css, border, Locale} from './core.js'; 
 import itemDialog from './itemDialog.js';
 import {getItems} from './mockWS.js';
 
