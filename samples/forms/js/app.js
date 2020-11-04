@@ -30,8 +30,18 @@ $C.css.addStylesheet('app', {
 				backgroundColor:'#0a3'
 			}
 		}
+	},
+	' button.danger':{
+		backgroundColor:'#f77'
 	}
 });
+
+// Обработчик для прокси, вызывающий перерисовку основной формы
+function mainFormSetTrap(){
+	const res = Reflect.set(...arguments);
+	renderMainForm();
+	return res;
+}
 
 // Состояния формы, изменения которых должно вызывать перерисовку
 const state = new Proxy({
@@ -39,11 +49,7 @@ const state = new Proxy({
 		pageNr: 0,
 		pageSize: 5,
 		locale: Locale.en
-	},{set:function(o, k, v){
-		o[k] = v;
-		renderMainForm();
-		return true;
-	}}
+	},{set:mainFormSetTrap}
 );
 
 function renderMainForm(){
@@ -55,13 +61,10 @@ function renderMainForm(){
 		console.log('loading data ...');
 		container.innerHTML = state.locale===Locale.ru?'Загрузка...':'Loading...';
 		getItems().then(res=>{
-			state.data = res.map(x=>new Proxy(x, {
-				set:function(o,k,v){ // обновление данных элементов списка
-					o[k] = v;
-					renderMainForm();
-					return true;
-				}
-			}));
+			state.data = new Proxy(
+				res.map(x=>new Proxy(x, {set:mainFormSetTrap})), // обновление данных элементов списка
+				{set: mainFormSetTrap} // отработка операций вставки и удаления элементов списка
+			);
 		});
 		return;
 	}
@@ -78,7 +81,8 @@ function renderMainForm(){
 				select({'class':'selLocale'},
 					apply(Locale, (v,k)=>option({value:v}, v===state.locale?{selected:true}:null, k))
 				),
-				button({'class':'btReload'}, state.locale===Locale.ru?'Перезагрузить':'Reload')
+				button({'class':'btReload'}, state.locale===Locale.ru?'Перезагрузить':'Reload'),
+				button({'class':'btAddItem'}, state.locale===Locale.ru?'Добавить элемент':'Add item')
 			),
 			div(
 				repeat(state.pageSize, i=>{
@@ -113,9 +117,20 @@ function renderMainForm(){
 					const idx = parseInt(ev.target.getAttribute('data-idx'));
 					console.log(`Item #${idx} clicked!`);
 					const itm = state.data[idx];
-					itemDialog(itm, state.locale);
+					itemDialog(itm, state.locale).then(res=>{
+						if(res.action==='deleteItem'){
+							state.data = state.data.filter((x,i)=>i!=idx);
+						}
+					});
 				}
 			},
+			'.btAddItem':{click:function(){
+				const itm = {};
+				itemDialog(itm, state.locale).then(()=>{
+					// Вставляем не просто элемент, а proxy, чтобы потом отрабатывались изменения его свойств
+					state.data.push(new Proxy(itm,{set:mainFormSetTrap}));
+				});
+			}}
 		}
 	);
 

@@ -2,17 +2,23 @@ import {$C, $H, px, css, border, Locale} from './core.js';
 import {modalDialog} from './controls.js';
 
 function itemDialog(itm, locale){
-	const dlg = modalDialog('itemDialog', locale===Locale.ru?'Свойства элемента':'Item properties', locale);
-
-	let valid = true;
-	const state = new Proxy({name: itm.name}, {
-		set: function(o,k,v){
+	const state = new Proxy({
+			newMode: itm.name===undefined,
+			name: itm.name??''
+		}, {set: function(o,k,v){
 			o[k] = v;
 			valid = validate[k](v);
 			return true;
-		}
-	});
+		}}
+	);
 
+	const dlg = modalDialog('itemDialog', 
+		state.newMode?(locale===Locale.ru?'Добавление элемента':'Adding new item')
+			:(locale===Locale.ru?'Свойства элемента':'Item properties'),
+		locale
+	);
+
+	let valid = true;
 	const validate = {
 		_all: function(){
 			for(let k in validate){
@@ -40,19 +46,28 @@ function itemDialog(itm, locale){
 		}
 	);
 
-	$C.form(dlg.querySelector('.dlgButtons .custom'),
-		markup(
-			button({'class':'btSave'}, locale===Locale.ru?'Сохранить':'Save')
-		),
-		{
-			'.btSave':{click:function(){
-				validate._all();
-				if(!valid) return;
-				dlg.remove();
-				itm.name = state.name;
-			}}
-		}
-	);
+	return new Promise(resolve=>{
+		$C.form(dlg.querySelector('.dlgButtons .custom'),
+			markup(
+				button({'class':'btSave'}, locale===Locale.ru?'Сохранить':'Save'),
+				state.newMode?null:button({'class':'danger btDelete'}, locale===Locale.ru?'Удалить':'Delete')
+			),
+			{
+				'.btSave':{click:function(){
+					validate._all();
+					if(!valid) return;
+					dlg.remove();
+					itm.name = state.name;
+					resolve();
+				}},
+				'.btDelete':{click:function(){
+					if(!confirm(locale===Locale.ru?'Удалить этот элемент?':'Delete this item?')) return;
+					dlg.remove();
+					resolve({action:'deleteItem'});
+				}}
+			}
+		);
+	});
 }
 
 export default itemDialog;
