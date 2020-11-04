@@ -5,7 +5,7 @@ function itemDialog(itm, locale){
 	const dlg = modalDialog('itemDialog', locale===Locale.ru?'Свойства элемента':'Item properties', locale);
 
 	let valid = true;
-	const state = new Proxy({name: itm.innerHTML}, {
+	const state = new Proxy({name: itm.name}, {
 		set: function(o,k,v){
 			o[k] = v;
 			valid = validate[k](v);
@@ -49,7 +49,7 @@ function itemDialog(itm, locale){
 				validate._all();
 				if(!valid) return;
 				dlg.remove();
-				itm.innerHTML = state.name;
+				itm.name = state.name;
 			}}
 		}
 	);

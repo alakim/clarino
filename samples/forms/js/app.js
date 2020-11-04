@@ -55,7 +55,13 @@ function renderMainForm(){
 		console.log('loading data ...');
 		container.innerHTML = state.locale===Locale.ru?'Загрузка...':'Loading...';
 		getItems().then(res=>{
-			state.data = res;
+			state.data = res.map(x=>new Proxy(x, {
+				set:function(o,k,v){ // обновление данных элементов списка
+					o[k] = v;
+					renderMainForm();
+					return true;
+				}
+			}));
 		});
 		return;
 	}
@@ -77,7 +83,7 @@ function renderMainForm(){
 			div(
 				repeat(state.pageSize, i=>{
 					const idx = i-1 + state.pageSize*state.pageNr;
-					return idx<state.data.length?div({'class':'item', 'data-idx':i}, 
+					return idx<state.data.length?div({'class':'item', 'data-idx':idx}, 
 						state.data[idx].name
 					):null;
 				}),
@@ -104,9 +110,10 @@ function renderMainForm(){
 			}},
 			'.item':{
 				click:function(ev){
-					const idx = ev.target.getAttribute('data-idx');
+					const idx = parseInt(ev.target.getAttribute('data-idx'));
 					console.log(`Item #${idx} clicked!`);
-					itemDialog(ev.target, state.locale);
+					const itm = state.data[idx];
+					itemDialog(itm, state.locale);
 				}
 			},
 		}
