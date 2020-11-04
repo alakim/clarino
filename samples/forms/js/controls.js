@@ -35,7 +35,7 @@ $C.css.addStylesheet('controls', {
 function modalDialog(id, title, locale){
 	const {markup,div,span,button} = $H;
 	const dlg = document.createElement('DIV');
-	dlg.setAttribute('id', id);
+	dlg.setAttribute('class', id);
 	dlg.setAttribute('class', 'modalDialog');
 	dlg.addEventListener('click', function(){dlg.remove();});
 
