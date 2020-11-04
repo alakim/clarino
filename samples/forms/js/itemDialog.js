@@ -1,8 +1,8 @@
-import {$C, $H, px, css, border, tLocale} from './core.js'; 
+import {$C, $H, px, css, border, Locale} from './core.js'; 
 import {modalDialog} from './controls.js';
 
 function itemDialog(itm, locale){
-	const dlg = modalDialog('itemDialog', locale===tLocale.ru?'Свойства элемента':'Item properties', locale);
+	const dlg = modalDialog('itemDialog', locale===Locale.ru?'Свойства элемента':'Item properties', locale);
 
 	let valid = true;
 	const state = new Proxy({name: itm.innerHTML}, {
@@ -23,7 +23,7 @@ function itemDialog(itm, locale){
 			valid = true;
 		},
 		name: function(val){
-			if(val.length<1) {alert(locale===tLocale.ru?'Ошибка валидации: следует указать название':'Validation error: empty name'); return false;}
+			if(val.length<1) {alert(locale===Locale.ru?'Ошибка валидации: следует указать название':'Validation error: empty name'); return false;}
 			return true;
 		}
 	};
@@ -31,7 +31,7 @@ function itemDialog(itm, locale){
 	const {markup,div,span,button,input} = $H;
 	$C.form(dlg.querySelector('.dlgContent'), 
 		markup(
-			div(locale===tLocale.ru?'Название':'Name', ': ', input({type:'text', 'class':'tbName', value: state.name}))
+			div(locale===Locale.ru?'Название':'Name', ': ', input({type:'text', 'class':'tbName', value: state.name}))
 		),
 		{
 			'.tbName':{change:function(ev){
@@ -42,7 +42,7 @@ function itemDialog(itm, locale){
 
 	$C.form(dlg.querySelector('.dlgButtons .custom'),
 		markup(
-			button({'class':'btSave'}, locale===tLocale.ru?'Сохранить':'Save')
+			button({'class':'btSave'}, locale===Locale.ru?'Сохранить':'Save')
 		),
 		{
 			'.btSave':{click:function(){

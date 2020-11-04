@@ -1,4 +1,4 @@
-import {$C, $H, px, css, border, tLocale} from './core.js'; 
+import {$C, $H, px, css, border, Locale} from './core.js'; 
 
 $C.css.addStylesheet('controls', {
 	'.modalDialog':{
@@ -46,7 +46,7 @@ function modalDialog(id, title, locale){
 				div({'class':'dlgContent'}),
 				div({'class':'dlgButtons'},
 					span({'class':'custom'}),
-					button({'class':'btClose'}, locale===tLocale.ru?'Отмена':'Cancel')
+					button({'class':'btClose'}, locale===Locale.ru?'Отмена':'Cancel')
 				)
 			)
 		),

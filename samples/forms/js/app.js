@@ -1,5 +1,6 @@
-import {$C, $H, px, css, border, tLocale} from './core.js'; 
+import {$C, $H, px, css, border, Locale} from './core.js'; 
 import itemDialog from './itemDialog.js';
+import {getItems} from './mockWS.js';
 
 $C.css.addStylesheet('app', {
 	'.simpleForm':{
@@ -8,6 +9,17 @@ $C.css.addStylesheet('app', {
 		padding: px(13),
 		' h2':{
 			margin:px(0, 0, 12)
+		},
+		' .topButtons':{
+			' button':{
+				margin:px(0, 5)
+			}
+		},
+		' .pagerButtons':{
+			textAlign: css.right,
+			' button':{
+				margin: px(0, 5)
+			}
 		},
 		' .item':{
 			padding: px(5),
@@ -27,50 +39,73 @@ window.addEventListener('load', function(){
 	let interval;
 
 	const state = new Proxy({
-		itemCount:5,
-		locale:tLocale.en
-	}, {set:function(o, k, v){o[k] = v; updateForm1(); return true;}});
+		data: null,
+		pageNr: 0,
+		pageSize: 5,
+		locale: Locale.en
+	}, {set:function(o, k, v){
+		o[k] = v;
+		updateForm1();
+		return true;
+	}});
 
 	function updateForm1(){
 		const container = document.getElementById('form1');
+
+		if(!state.data){
+			container.innerHTML = state.locale===Locale.ru?'Загрузка...':'Loading...';
+			getItems().then(res=>{
+				state.data = res;
+			});
+			return;
+		}
+
 		$C.form(container, // or query selector '#form1',
 			div({'class':'simpleForm'},
 				$H.h2(
-					state.locale===tLocale.ru?'Список элементов':'Item list'
+					state.locale===Locale.ru?'Список элементов':'Item list'
 				),
-				div(
-					state.locale===tLocale.ru?'Количество: ':'Count: ', 
-					input({'type':'text', 'class':'tbCount', value:state.itemCount}),
-					' ', state.locale===tLocale.ru?'Язык':'Locale', ': ',
+				div({'class':'topButtons'},
+					state.locale===Locale.ru?'Размер страницы: ':'Page size: ', 
+					input({'type':'text', 'class':'tbPageSize', value:state.pageSize}),
+					' ', state.locale===Locale.ru?'Язык':'Locale', ': ',
 					select({'class':'selLocale'},
-						apply(tLocale, (v,k)=>option({value:v}, v===state.locale?{selected:true}:null, k))
-					)
+						apply(Locale, (v,k)=>option({value:v}, v===state.locale?{selected:true}:null, k))
+					),
+					button({'class':'btReload'}, state.locale===Locale.ru?'Перезагрузить':'Reload')
 				),
 				div(
-					repeat(state.itemCount, i=>div({'class':'item', 'data-idx':i}, 
-						state.locale===tLocale.ru?'Элемент №'
-							:'Item #', 
-						i
-					)),
+					repeat(state.pageSize, i=>{
+						const idx = i-1 + state.pageSize*state.pageNr;
+						return idx<state.data.length?div({'class':'item', 'data-idx':i}, 
+							state.data[idx].name
+						):null;
+					}),
+				),
+				div({'class':'pagerButtons'},
+					state.pageNr>0?button({'class':'btPrevPage'}, '&lt;&lt;', state.locale===Locale.ru?'Пред. страница':'Prev page'):null,
+					state.pageNr<(state.data.length/state.pageSize - 1)?button({'class':'btNextPage'}, state.locale===Locale.ru?'След. страница':'Next page', '&gt;&gt;'):null
 				),
 				div(
 					button({'class':'btStart'}, 
-						state.locale===tLocale.ru?'Старт':'Start'
+						state.locale===Locale.ru?'Старт':'Start'
 					),
 					button({'class':'btStop'}, 
-						state.locale===tLocale.ru?'Стоп':'Stop'
+						state.locale===Locale.ru?'Стоп':'Stop'
 					)
 				)
 			),
 			{
-				'.tbCount':{
+				'.tbPageSize':{
 					click:function(){console.log('Count field clicked!')},
 					change:function(ev){
 						const val = ev.target.value;
-						console.log('Count changed to "%s"', val);
-						state.itemCount = parseInt(val);
+						state.pageSize = parseInt(val);
 					}
 				},
+				'.btPrevPage':{click:()=>{state.pageNr--;}},
+				'.btNextPage':{click:()=>{state.pageNr++;}},
+				'.btReload':{click:()=>{state.data = null;}},
 				'.selLocale':{change:function(ev){
 					state.locale = parseInt(ev.target.value);
 				}},
