@@ -1,4 +1,4 @@
-import {$C, $H, px, css, border, Locale} from './core.js'; 
+import {$C, $H, px, css, border, Locale from './core.js'; 
 import itemDialog from './itemDialog.js';
 import {getItems} from './mockWS.js';
 
@@ -37,20 +37,22 @@ $C.css.addStylesheet('app', {
 });
 
 // Обработчик для прокси, вызывающий перерисовку основной формы
-function mainFormSetTrap(){
-	const res = Reflect.set(...arguments);
-	renderMainForm();
-	return res;
-}
+const mainFormHandler = {
+	set: function(){
+		const res = Reflect.set(...arguments);
+		renderMainForm();
+		return res;
+	}
+};
+
 
 // Состояния формы, изменения которых должно вызывать перерисовку
 const state = new Proxy({
-		data: null,
-		pageNr: 0,
-		pageSize: 5,
-		locale: Locale.en
-	},{set:mainFormSetTrap}
-);
+	data: null,
+	pageNr: 0,
+	pageSize: 5,
+	locale: Locale.en
+}, mainFormHandler);
 
 function renderMainForm(){
 	console.log('rendering main form');
@@ -62,8 +64,8 @@ function renderMainForm(){
 		container.innerHTML = state.locale===Locale.ru?'Загрузка...':'Loading...';
 		getItems().then(res=>{
 			state.data = new Proxy(
-				res.map(x=>new Proxy(x, {set:mainFormSetTrap})), // обновление данных элементов списка
-				{set: mainFormSetTrap} // отработка операций вставки и удаления элементов списка
+				res.map(x=>new Proxy(x, mainFormHandler)), // обновление данных элементов списка
+				mainFormHandler // отработка операций вставки и удаления элементов списка
 			);
 		});
 		return;
@@ -118,7 +120,7 @@ function renderMainForm(){
 					console.log(`Item #${idx} clicked!`);
 					const itm = state.data[idx];
 					itemDialog(itm, state.locale).then(res=>{
-						if(res.action==='deleteItem'){
+						if(res?.action==='deleteItem'){
 							state.data = state.data.filter((x,i)=>i!=idx);
 						}
 					});
@@ -128,7 +130,7 @@ function renderMainForm(){
 				const itm = {};
 				itemDialog(itm, state.locale).then(()=>{
 					// Вставляем не просто элемент, а proxy, чтобы потом отрабатывались изменения его свойств
-					state.data.push(new Proxy(itm,{set:mainFormSetTrap}));
+					state.data.push(new Proxy(itm, mainFormHandler));
 				});
 			}}
 		}
