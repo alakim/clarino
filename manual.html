@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
 	<title></title>
 	<script src="tools/jquery-3.1.1.min.js"></script>
-	<script src="clarino.min.js"></script>
+	<script src="clarino.js"></script>
 
 	<script>
 	(function($, $C){
@@ -1038,7 +1038,7 @@
 								p('вернет строку ', code('width:100%;height:80px;color:#f00'), '.'),
 								test("Style attribute", "Formatting", function(){ with(Clarino.simple){
 									var style = Clarino.formatStyle({
-										width:Clarino.css.unit.pc(100),
+										width:Clarino.css.unit.pCt(100),
 										height:80,
 										color:"#f00"
 									});
@@ -1277,7 +1277,7 @@
 									assert(px(22), "22px");
 									assert(px(3, 5, 10), "3px 5px 10px");
 									assert(Clarino.css.unit.px(22), '22px');
-									assert(Clarino.css.unit.pc(100), '100%');
+									assert(Clarino.css.unit.pCt(100), '100%');
 									assert(Clarino.css.unit.px(22, Clarino.css.keywords.auto), '22px auto');
 								}),
 								(function(){
@@ -1286,7 +1286,7 @@
 										units.push(k);
 									}
 									units.sort();
-									var nms = {px:'px', em:'em', pc:'%'};
+									var nms = {px:'px', em:'em', pc:'pc', rem:'rem', pCt:'%'};
 									return markup(
 										p('Имеется ряд предопределенных единиц:'),
 										ul(apply(units, function(u){

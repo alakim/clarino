@@ -1,19 +1,19 @@
-var Clarino = (function(){
-	var Html = {},
-		Css = {};
-	var Clarino = {
-		xhtmlMode: true	
+const Clarino = (function(){
+	const Html = {}, Css = {};
+	const Clarino = {
+		xhtmlMode: true
 	};
 	
-	function extend(o,s){for(var k in s){o[k] = s[k];}}
+	function extend(o,s){for(let k in s){o[k] = s[k];}}
 
 	function compose(path){
 		if(typeof(path)=='string') path = path.split(';');
-		var res = {};
-		for(var p,i=0; p=path[i],i<path.length; i++){
+		const res = {};
+		for(let p of path){
 			p = p.split('.');
-			var v = Clarino, s;
-			for(var j=0; j<p.length; j++){
+			let v = Clarino;
+			let s;
+			for(let j=0; j<p.length; j++){
 				s = p[j]; v = v[s];
 			}
 			res[s] = v;
@@ -24,31 +24,30 @@ var Clarino = (function(){
 	function each(coll, F){
 		if(!coll) return;
 		if(coll instanceof Array)
-			for(var i=0; i<coll.length; i++){F(coll[i], i);}
+			for(let i=0; i<coll.length; i++){F(coll[i], i);}
 		else if(Array.from && coll instanceof Map){
-			var keys = Array.from(coll.keys());
-			for(var k,i=0; k=keys[i], i<keys.length; i++){
+			const keys = Array.from(coll.keys());
+			for(let k,i=0; k=keys[i], i<keys.length; i++){
 				F(coll.get(k), k);
 			}
 		}
 		else if(Array.from && coll instanceof Set){
-			var items = Array.from(coll);
-			for(var k,i=0; k=items[i], i<items.length; i++){
-				F(k,i);
-			}
+			const items = Array.from(coll);
+			for(let i=0; i<items.length; i++) F(items[i], i);
 		}
 		else
-			for(var k in coll){F(coll[k], k);}
+			for(let k in coll){F(coll[k], k);}
 	}
 	
 	function tag(name, content, selfClosing, notEmpty){
-		var h = [], a = [];
+		let h = [];
+		const a = [];
 		each(content, function(el){
 			if(typeof(el)!="object")
 				h.push(el);
 			else{
 				each(el, function(val, nm){
-					a.push(" "+nm+"=\""+val+"\"");
+					a.push(` ${nm}="${val}"`);
 				});
 			}
 		});
@@ -57,10 +56,9 @@ var Clarino = (function(){
 		if(h.match(/^\s+$/i)) h = "";
 		if(notEmpty && h.length==0) h = "&nbsp;";
 		
-		if(selfClosing && h.length==0)
-			return "<"+name+a.join("")+(Clarino.xhtmlMode? "/>":">");
-		else
-			return "<"+name+a.join("")+">"+h+"</"+name+">";
+		return selfClosing && h.length==0
+			? "<"+name+a.join("")+(Clarino.xhtmlMode? "/>":">")
+			: "<"+name+a.join("")+">"+h+"</"+name+">";
 	}
 
 	function getAlias(def){
@@ -74,8 +72,8 @@ var Clarino = (function(){
 	function defineTags(tags, selfClosing, notEmpty){
 		if(!(tags instanceof Array)) tags = tags.split(";");
 		each(tags, function(t){
-			//var tN = t.indexOf("_")==0?t.slice(1):t;
-			var tN = getAlias(t);
+			//const tN = t.indexOf("_")==0?t.slice(1):t;
+			const tN = getAlias(t);
 			Html[tN.alias] = function(content){
 				return tag(tN.name, arguments, selfClosing, notEmpty);
 			}
@@ -85,7 +83,7 @@ var Clarino = (function(){
 	function defineSelfClosingTags(tags){defineTags(tags, true, false);}
 	function defineNotEmptyTags(tags){defineTags(tags, false, true)}
 	function markup(){
-		var res = [];
+		const res = [];
 		each(arguments, function(tag){
 			res.push(tag);
 		});
@@ -93,9 +91,8 @@ var Clarino = (function(){
 	}
 	
 	function repeat(count, F, delim){
-		var h = [];
-		for(var i=0; i<count; i++)
-			h.push(F(i+1));
+		const h = [];
+		for(let i=0; i<count; i++) h.push(F(i+1));
 		return h.join(delim||"");
 	}
 	
@@ -115,20 +112,20 @@ var Clarino = (function(){
 			if(typeof(o)=="number") return o.toString();
 			if(typeof(o)=="function") return "";
 			if(o.constructor==Array){
-				var res = [];
-				for(var i=0; i<o.length; i++) res.push(Clarino.json(o[i]));
+				const res = [];
+				for(let i=0; i<o.length; i++) res.push(Clarino.json(o[i]));
 				return "["+res.join(",")+"]";
 			}
 			if(typeof(o)=="object"){
-				var res = [];
-				for(var k in o) res.push(k+":"+Clarino.json(o[k]));
+				const res = [];
+				for(let k in o) res.push(k+":"+Clarino.json(o[k]));
 				return "{"+res.join(",")+"}";
 			}
 			return "";
 		},
 		
 		format: function(str, v1, v2){
-			for(var i=0; i<arguments.length; i++){
+			for(let i=0; i<arguments.length; i++){
 				str = str.replace(new RegExp("{\s*"+i+"\s*}", "ig"), arguments[i+1])
 			}
 			return str;
@@ -136,18 +133,18 @@ var Clarino = (function(){
 
 		entities: function(str){
 			if(!str) return '';
-			str = str.toString();
-			return str.replace(/\&/g, '&amp;')
+			return str.toString()
+				.replace(/\&/g, '&amp;')
 				.replace(/</g, '&lt;')
 				.replace(/>/g, '&gt;')
 				.replace(/\"/g, '&quot;')
-				.replace(/\'/g, '&apos;');
+				.replace(/\'/g, '&apos;')
+			;
 		},
 
 		decodeEntities: function(str){
 			if(!str) return '';
-			str = str.toString();
-			return str
+			return str.toString()
 				.replace(/\&lt;/g, '<')
 				.replace(/\&gt;/g, '>')
 				.replace(/&quot;/g, '"')
@@ -159,10 +156,10 @@ var Clarino = (function(){
 		tag: tag,
 		
 		apply: function(coll, F, delim, hideEmpty){
-			var h = [];
+			const h = [];
 			each(coll, function(el, i){
 				if(!emptyValue(el) || !hideEmpty){
-					var v = F(el, i);
+					const v = F(el, i);
 					if(!emptyValue(v) || !hideEmpty)
 						h.push(v);
 				}
@@ -177,30 +174,27 @@ var Clarino = (function(){
 				return val;
 			}
 			
-			var s = {};
-			for(var i=0; i<arguments.length; i++){
+			const s = {};
+			for(let i=0; i<arguments.length; i++){
 				extend(s, arguments[i]);
 			}
-			var r = [];
-			for(var k in s){
-				var kk = k.replace(/([A-Z])/g, function(v){
-					//console.log(v);
-					return '-'+v.toLowerCase();
-				});
+			const r = [];
+			for(let k in s){
+				const kk = k.replace(/([A-Z])/g, v=>'-'+v.toLowerCase());
 				r.push(kk+":"+addUnits(kk, s[k]));
 			}
 			return r.join(";");
 		},
 		
 		callFunction: function(name, a1, a2){
-			var args = [];
-			for(var i=1; i<arguments.length; i++){
-				var arg = arguments[i];
+			const args = [];
+			for(let i=1; i<arguments.length; i++){
+				let arg = arguments[i];
 				arg = typeof(arg)=="string" && arg.match(/^@/)? arg.slice(1, arg.length)
 					:Clarino.json(arg);
 				args.push(arg);
 			}
-			return [name, "(", args.join(","), ")"].join("");
+			return `${name}(${args.join(',')})`;
 		},
 		defineTags: function(tags){
 			if(!(tags instanceof(Array)))tags=tags.split(";");
@@ -208,29 +202,27 @@ var Clarino = (function(){
 		},
 		getTagDefinitions: function(tags){
 			if(!(tags instanceof(Array)))tags=tags.split(";");
-			function defTag(nm){return function(){return Clarino.tag(nm, arguments, true);}}
-			var res = {}
-			for(var i=0,t; t=tags[i],i<tags.length; i++){
-				var tN = getAlias(t);
+			function defTag(nm){
+				return function(){return Clarino.tag(nm, arguments, true);}
+			}
+			const res = {}
+			for(let t of tags){
+				const tN = getAlias(t);
 				res[tN.alias] = defTag(tN.name);
 			}
 			return res;
 		}
 	});
 
-	// extend(Html, { });
-	
 	defineTags("div;a;p;span;nobr;ul;ol;li;i;table;tbody;thead;tr;input;label;textarea;pre;select;option;optgroup;h1;h2;h3;h4;h5;h6;button;form;dl;dt;dd;svg");
 	defineTags('abbr;address;area;article;aside;audio;b;base;bdi;bdo;blockquote;body;canvas;caption;cite;code;col;colgroup;datalist;del;details;dfn;dialog;em;embed;fieldset;figcaption;figure;footer;head;header;html;ins;kbd;keygen;legend;link;main;map;mark;menu;menuitem;meta;meter;nav;noscript;object;output;param;picture;progress;q;rp;rt;ruby;s;samp;script;section;small;source;strong;style;sub;summary;sup;tfoot;time;title;track;u;var;video;wbr');
 	
 	defineSelfClosingTags("img;hr;br;iframe");
 	defineNotEmptyTags("th;td");
 	
-	
-	
 	function writeStyle(defs, sel, stylesheet){
 		if(typeof(defs)=="function") defs = defs();
-		var children = {};
+		const children = {};
 		
 		function insertHyphens(nm){
 			nm = nm.replace(/([A-Z])/g, function(m){
@@ -240,7 +232,7 @@ var Clarino = (function(){
 		}
 		
 		function attrName(nm){
-			var attNm = Css.attributes[nm] || nm;
+			const attNm = Css.attributes[nm] || nm;
 			return insertHyphens(attNm);
 		}
 		
@@ -252,9 +244,7 @@ var Clarino = (function(){
 				stylesheet.push([attrName(nm), ":", v, ";"].join(" "));
 			}
 			else if(v instanceof Array){
-				for(var el,i=0; el=v[i],i<v.length; i++){
-					stylesheet.push([attrName(nm), ":", el, ";"].join(" "));
-				}
+				for(let el of v) stylesheet.push([attrName(nm), ":", el, ";"].join(" "));
 			}
 			else{
 				children[nm] = v;
@@ -267,24 +257,10 @@ var Clarino = (function(){
 		});
 	}
 
-	/* ***************************
-	Css.rules = function(title, styles){
-		return title+'{\n'
-			+ Css.stylesheet(styles)
-			+'\n}';
-	}
-	
-	Css.writeRules = function(title, styles){
-		document.write('<style type="text/css">\n');
-		document.write(Css.cssRules(title, styles));
-		document.write('\n</style>\n');
-	}
-	******************************* */
-
 	Css.attributes = {};
 	
 	Css.stylesheet = function(css){
-		var stylesheet = [];
+		const stylesheet = [];
 		each(css, function(defs, sel){
 			writeStyle(defs, sel, stylesheet);
 		});
@@ -308,36 +284,28 @@ var Clarino = (function(){
 	}
 	
 	Css.unit = function(name){
-		function format(v){
-			if(typeof(v)==='string') return v;
-			if(v instanceof Array) return v.join(name+' ')+name;
-			return v+name;
-		}
-		return 	function(v){
-			if(arguments.length==1) return format(v);
-			var res = [];
-			for(var i=0,a; a=arguments[i],i<arguments.length; i++){
-				res.push(format(a));
-			}
-			return res.join(' ');
+		const format = v=>typeof(v)==='string'?v
+			:v instanceof Array? v.join(name+' ')+name
+			:v+name;
+
+		return function(v){
+			return arguments.length==1?format(v)
+				:Array.from(arguments).map(a=>format(a)).join(' ');
 		}
 	}
 
 	extend(Css.unit, {
 		px: Css.unit('px'),
-		pc: Css.unit('%'),
+		pCt: Css.unit('%'),
+		pc: Css.unit('pc'),
+		rem: Css.unit('rem'),
 		em: Css.unit('em')
 	});
 
 	Clarino.symbols = function(str){
-		var res = {}, c=str.split(';');
-		for(var s,i=0; s=c[i],i<c.length; i++){
-			var sVal = s.replace(/[A-Z]/g, function(v){
-				// console.log(v);
-				return '-'+v.toLowerCase();
-			});
-			res[s] = sVal;
-		}
+		const c=str.split(';');
+		const res = {};
+		for(let s of c) res[s] = s.replace(/[A-Z]/g, v=>'-'+v.toLowerCase());
 		return res;
 	};
 
@@ -364,10 +332,9 @@ var Clarino = (function(){
 		if(v1==v2) return 0;
 		v1 = v1.split(".");
 		v2 = v2.split(".");
-		for(var i=0; i<3; i++){
-			var a = parseInt(v1[i], 10),
+		for(let i=0; i<3; i++){
+			const a = parseInt(v1[i], 10),
 				b = parseInt(v2[i], 10);
-			
 			if(a<b) return -1;
 			if(a>b) return 1;
 		}
@@ -376,9 +343,9 @@ var Clarino = (function(){
 	
 	function version(num){
 		if(!num) return topVersion;
-		for(var k in interfaces){
+		for(let k in interfaces){
 			if(compareVersions(num, k)<=0){
-				var $H = {};
+				const $H = {};
 				extend($H, interfaces[k]);
 				return $H;
 			}
@@ -386,15 +353,15 @@ var Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	var topVersion = "1.5.0";
+	const topVersion = "1.5.1";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
 	
-	var interfaces = {};
+	const interfaces = {};
 	interfaces[topVersion] = Clarino;
 	
-	var intf = {
+	const intf = {
 		version: version
 	};
 	
@@ -402,8 +369,8 @@ var Clarino = (function(){
 	Clarino.html = Html;
 	Clarino.css = Css;
 	Clarino.simple = compose('markup;apply;repeat;format;formatStyle;entities;decodeEntities;callFunction');
-	//var simpleHtml = compose('html.div');
-	var simpleHtml = compose('html.div;html.a;html.p;html.span;html.nobr;html.hr;html.br;html.img;html.ul;html.ol;html.li;html.table;html.tbody;html.thead;html.tr;html.td;html.th;html.input;html.label;html.textarea;html.pre;html.select;html.option;html.optgroup;html.h1;html.h2;html.h3;html.h4;html.h5;html.h6;html.button;html.form;html.dl;html.dt;html.dd');
+	//const simpleHtml = compose('html.div');
+	const simpleHtml = compose('html.div;html.a;html.p;html.span;html.nobr;html.hr;html.br;html.img;html.ul;html.ol;html.li;html.table;html.tbody;html.thead;html.tr;html.td;html.th;html.input;html.label;html.textarea;html.pre;html.select;html.option;html.optgroup;html.h1;html.h2;html.h3;html.h4;html.h5;html.h6;html.button;html.form;html.dl;html.dt;html.dd');
 	extend(Clarino.simple, simpleHtml);
 	
 	return Clarino;
