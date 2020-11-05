@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Clarino2 tests</title>
+	<style>
+		body{
+			font-family: Verdana, Arial, Sans-Serif;
+			background-color:#012;
+			color: #ffe;
+		}
+		#out{
+			background-color:#000;
+			color: #eef;
+			font-family: Courier New, Monospace;
+			width: 900px;
+			min-height: 300px;
+		}
+
+		.success{
+			color: #0f0;
+		}
+		.error{
+			color: #f00;
+		}
+	</style>
+	<script src="../../clarino.js"></script>
+	<script src="js/clarino2.js"></script>
+	<script>
+		const $C = Clarino.version('1.5.0'), $H = $C.simple;
+		addEventListener('load', function(){
+			function print(msg){
+				document.getElementById('out').innerHTML += $H.div(msg);
+			}
+
+			function printSuccess(){
+				document.getElementById('out').innerHTML += $H.div({'class':'success'}, 'OK');
+			}
+
+			function printError(msg){
+				document.getElementById('out').innerHTML += $H.div({'class':'error'}, $H.div('Error: '), msg);
+			}
+
+			function lazyTest(){
+				print('Lazy function test');
+
+				const testOut = [];
+				function testPrint(msg){
+					testOut.push(msg);
+				} 
+
+				function fA(){ testPrint('AAA'); }
+				function fB(x, y){ testPrint('BBB:'+x+y); }
+
+				function checkTest(){
+					// В функции с аргументами учитываем последние их значения
+					if(testOut.join(' ')==='AAA BBB:67') printSuccess();
+					else printError(testOut.join('<br>'));
+				}
+
+				const lA = $C.lazy(fA);
+				const lB = $C.lazy(fB);
+
+				lA();
+				lA();
+				lB(1,2);
+				lA();
+				lB(3,4);
+				lB();
+				setTimeout(function(){
+					lB(5);
+					lA();
+					lA();
+					lB(6,7);
+					lA();
+				}, 200);
+				setTimeout(checkTest, 500);
+			}
+
+			function enumTest(){
+				print('Enumeration test');
+
+				let errorsDetected = false;
+
+				const eTypes1 = Clarino.enumeration('int;float;bool');
+				// console.log(JSON.stringify(eTypes1));
+				if(JSON.stringify(eTypes1)!='{"int":0,"float":1,"bool":2}'){errorsDetected = true; printError('Bad JSON for eTypes1')}
+
+				const eTypes2 = Clarino.enumeration('int;float;bool', true);
+				// console.log(JSON.stringify(eTypes2));
+				if(JSON.stringify(eTypes2)!='{}'){errorsDetected = true; printError('Bad JSON for eTypes2')}
+				if(typeof(eTypes2.float)!='symbol'){errorsDetected = true; printError('eTypes2: symbols expected')}
+
+				if(!errorsDetected) printSuccess();
+			}
+
+			function rangeTest(){
+				print('Range test');
+				let errorsDetected = false;
+
+				const rr = Array.from($C.range(2,12,2));
+				if(rr.join()!='2,4,6,8,10,12'){errorsDetected = true; printError('Bad range rr: '+rr.join());}
+				const rr1 = Array.from($C.range(0,5));
+				if(rr1.join()!='0,1,2,3,4,5'){errorsDetected = true; printError('Bad range rr1: '+rr1.join());}
+
+				if(!errorsDetected) printSuccess();
+			}
+
+			enumTest();
+			rangeTest();
+			lazyTest();
+		});
+	</script>
+</head>
+<body>
+	<h1>Clarino2 tests</h1>
+	<div id="out"></div>
+</body>
+</html>

@@ -7,6 +7,7 @@ $C.css.addStylesheet('app', {
 		width: px(800),
 		border: border(1, '#ffe'),
 		padding: px(13),
+		margin: px(12, 3),
 		' h2':{
 			margin:px(0, 0, 12)
 		},

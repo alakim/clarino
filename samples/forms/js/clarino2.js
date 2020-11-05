@@ -1,9 +1,6 @@
 (function(){
 
 	Clarino.enumeration = (s,symbolic=false)=>Object.freeze(s.split(';').reduce((a,e,i)=>(a[e]=symbolic?Symbol():i, a), {}));
-	// const eTypes = Clarino.enumeration('int;float;bool');
-	// const eTypes = Clarino.enumeration('int;float;bool', true);
-	// console.log(JSON.stringify(eTypes));
 
 	Clarino.range = function*(vFrom, vTo, vStep=1){
 		for(let i=vFrom; i<=vTo; i+=vStep) yield i;
@@ -23,5 +20,31 @@
 				el.addEventListener(evt, handlers[evt]);
 		}
 	};
+
+	Clarino.lazy = function(F, timeout=300){
+		let last = 0;
+		let args = [];
+
+		return function(){
+			args = Array.from(arguments);
+			if(last) return;
+
+			function tryStart(){
+				last = new Date().getTime();
+				setTimeout(function(){
+					const now = new Date().getTime();
+					if(now - last < timeout){
+						last = now;
+						tryStart();
+						return;
+					}
+					last = 0;
+					F(...args);
+				}, timeout);
+			}
+
+			tryStart();
+		};
+	}
 	
 })();
