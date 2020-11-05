@@ -8,7 +8,12 @@
 			font-family:Verdana, Arial, Sans-Serif;
 			background-color: #012;
 			color: #ffe;
+			--link-color: #8ff;
+			--link-hicolor: #4f9;
 		}
+		a:link{color:var(--link-color);}
+		a:visited{color:var(--link-color);}
+		a:hover{color:var(--link-hicolor);}
 	</style>
 	<script src="../../clarino.js"></script>
 	<script src="js/clarino2.js"></script>
@@ -16,6 +21,7 @@
 </head>
 <body>
 	<h1>Forms sample</h1>
+	<div><a href="clarino2tests.html" target="_blank">Clarino2 tests</a></div>
 	<div id="mainForm"></div>
 </head>
 </body>

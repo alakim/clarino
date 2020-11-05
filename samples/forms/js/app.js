@@ -7,6 +7,7 @@ $C.css.addStylesheet('app', {
 		width: px(800),
 		border: border(1, '#ffe'),
 		padding: px(13),
+		margin: px(12, 3),
 		' h2':{
 			margin:px(0, 0, 12)
 		},
@@ -54,7 +55,7 @@ const state = new Proxy({
 	locale: Locale.en
 }, mainFormHandler);
 
-function renderMainForm(){
+const renderMainForm = $C.lazy(function(){
 	console.log('rendering main form');
 	const container = document.getElementById('mainForm');
 	const {markup,apply,repeat,div,span,input,button,select,option} = $H;
@@ -137,7 +138,7 @@ function renderMainForm(){
 	);
 
 	renderAnimationForm();
-}
+}, 100);
 
 
 // Форма кнопок анимации - вложенная в основную форму.

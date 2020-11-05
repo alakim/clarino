@@ -4,7 +4,8 @@ import {modalDialog} from './controls.js';
 function itemDialog(itm, locale){
 	const state = new Proxy({
 			newMode: itm.name===undefined,
-			name: itm.name??''
+			name: itm.name??'',
+			size: itm.size??0
 		}, {set: function(o,k,v){
 			o[k] = v;
 			valid = validate[k](v);
@@ -31,18 +32,22 @@ function itemDialog(itm, locale){
 		name: function(val){
 			if(val.length<1) {alert(locale===Locale.ru?'Ошибка валидации: следует указать название':'Validation error: empty name'); return false;}
 			return true;
+		},
+		size: function(val){
+			if(isNaN(parseInt(val))) {alert(locale===Locale.ru?'Ошибка валидации: размер должен быть целочисленным':'Validation error: size must be integer'); return false;}
+			return true;
 		}
 	};
 
 	const {markup,div,span,button,input} = $H;
 	$C.form(dlg.querySelector('.dlgContent'), 
 		markup(
-			div(locale===Locale.ru?'Название':'Name', ': ', input({type:'text', 'class':'tbName', value: state.name}))
+			div(locale===Locale.ru?'Название':'Name', ': ', input({type:'text', 'class':'tbName', value: state.name})),
+			div(locale===Locale.ru?'Размер':'Size', ': ', input({type:'text', 'class':'tbSize', value: state.size??''}))
 		),
 		{
-			'.tbName':{change:function(ev){
-				state.name = ev.target.value;
-			}}
+			'.tbName':{change:function(ev){state.name = ev.target.value;}},
+			'.tbSize':{change:function(ev){state.size = ev.target.value;}}
 		}
 	);
 
@@ -58,6 +63,7 @@ function itemDialog(itm, locale){
 					if(!valid) return;
 					dlg.remove();
 					itm.name = state.name;
+					itm.size = state.size;
 					resolve();
 				}},
 				'.btDelete':{click:function(){
