@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
 	<title></title>
 	<script src="tools/jquery-3.1.1.min.js"></script>
-	<script src="clarino.js"></script>
+	<script src="clarino.min.js"></script>
 
 	<script>
 	(function($, $C){
@@ -1038,7 +1038,7 @@
 								p('вернет строку ', code('width:100%;height:80px;color:#f00'), '.'),
 								test("Style attribute", "Formatting", function(){ with(Clarino.simple){
 									var style = Clarino.formatStyle({
-										width:Clarino.css.unit.pCt(100),
+										width:Clarino.css.unit.pct(100),
 										height:80,
 										color:"#f00"
 									});
@@ -1182,8 +1182,96 @@
 								p('Метод получает строку, содержащую список строковых констант, разделенных точками с запятой. Возвращает объект, имеющий атрибуты, имена и значения которых соответствуют указанным при вызове строковым константам'),
 								p('Например, вызов ', code('Clarino.symbols("abc;def")'), ' возвратит объект ', code('{abc:"abc", def:"def"}'), '.'),
 								test('Symbols', 'Definitions', function(){
-									var ss = Clarino.symbols('abc;def');
+									const ss = Clarino.symbols('abc;def');
 									assert(ss, {abc:'abc', def:'def'});
+								}),
+								test('Undefined symbols', 'Definitions', function(){
+									assert(Clarino.css.keywords.bold, 'bold');
+									try{
+										const ss = Clarino.css.keywords.boldx;
+									}
+									catch(e){
+										assert(e, 'Undefined symbol "boldx"');
+									}
+								})
+							),
+							enumeration: markup(
+								p('Возвращает объект, содержащий определение перечислимого типа. Атрибуты объекта - идентификаторы значений типа, значения этих атрибутов являются целочисленными константами или символами.'),
+								p('Метод получает строку, содержащую список идентификаторов значений, разделенных точками с запятой, а также необязательный параметр ', code('symbolic'), ' (по умолчанию ', code('false'), '), предписывающий использовать в качестве значений атрибутов символы (по умолчанию используются целочисленные константы).'),
+								p('Например, вызов ', code('Clarino.enumeration("trumpet;clarinet;flute")'), ' возвратит объект ', code('{trumpet:0, clarinet:1, flute:2}'), '.'),
+								test('Enumeration', 'Definitions', function(){
+									const en = Clarino.enumeration('trumpet;clarinet;flute');
+									assert(en, {trumpet:0, clarinet:1, flute:2});
+									en.trumpet = 22;
+									assert(en, {trumpet:0, clarinet:1, flute:2});
+								}),
+								p('Возвращаемый объект является "замороженным" ("frozen"), и не позволяет изменять значения его атрибутов.'),
+								test('Undefined enumeration value', 'Definitions', function(){
+									const en = Clarino.enumeration('trumpet;clarinet;flute');
+									assert(en.trumpet, 0);
+									try{
+										const trpt = en.boldx;
+									}
+									catch(e){
+										assert(e, 'Undefined enum value "boldx"');
+									}
+								})
+							),
+							curry: markup(
+								p('Модифицирует функцию, приводя ее в "каррированный" вид, допускающий ее частичное применение.'),
+								p('Например, функцию, определенную следующим образом, ', code('const f = Clarino.curry((a,b,c)=>a+b+c);'), ',  можно вызывать разными способами:'),
+								ul(
+									li(code('f(1,2,3)')),
+									li(code('f(1)(2,3)')),
+									li(code('f(1,2)(3)')),
+									li(code('f(1)(2)(3)'))
+								),
+								test('Curry', 'Definitions', function(){
+									const f = Clarino.curry((a,b,c)=>a+b+c);
+									assert(f(1)(2)(3), 6);
+									assert(f(1)(2,3), 6);
+									assert(f(1, 2)(3), 6);
+									assert(f(1,2,3), 6)
+								})
+							),
+							range: markup(
+								p('Возвращает функцию-генератор, создающую массив значений, лежащих в заданном диапазоне.'),
+								p('Метод получает три аргумента:'),
+								ol(
+									li(code('vFrom'), ' - указывает начало диапазона'),
+									li(code('vTo'), ' - указывает конец диапазона'),
+									li(code('vStep'), ' - (необязательный, по умолчанию равен 1), задает шаг следования значений')
+								),
+								p('Например, вызов ', code('Array.from(Clarino.range(0,4))'), ' возвратит массив ', code('[0, 1, 2, 3, 4]'), '.'),
+								test('Range', 'Definitions', function(){
+									assert(Array.from(Clarino.range(0,4)), [0,1,2,3,4]);
+								})
+							),
+							lazy: markup(
+								p('Модифицирует функцию для придания ей "ленивого" поведения.'),
+								p('Получает функцию, возвращает функцию, вызывающую переданную, но отклонающую вызовы, производимые чаще заданного периода.'),
+								p('Аргументы: '),
+								ul(
+									li(code('F'), ' - модифицируемая функция'),
+									li(code('timeout'), ' - (необязательный) таймаут в миллисекундах, в течение которого повторные вызовы данной функции отклоняются (по умолчанию равен 300)'),
+								),
+								p('Данный метод полезен при создании интерактивных веб-форм, основанных на событийной модели. "Ленивое" поведение обработчиков событий предотвращает неоправданно частое их исполнение (например, повторную перерисовку формы в интервале 200 мсек).')
+							),
+							form: markup(
+								p('Конструктор интерактивной формы.'),
+								p('Аргументы: '),
+								ul(
+									li(code('container'), ' - контейнерный элемент DOM, в котором будет размещена форма. Задается ссылкой на элемент, или строкой-селектором.'),
+									li(code('markup'), ' - строка, содержащая HTML-разметку формы'),
+									li(code('events'), ' - структура (объект), содержащая обработчики событий, назначаемые элементам формы')
+								),
+								p('Структура обработчиков событий представляет собой объект, включающий в себя атрибуты двух уровней. Атрибуты первого уровня имеют в качестве имен селекторы элементов формы. Атрибуты второго уровня имеют именами идентификаторы событий, а в качестве их значений передаются функции-обработчики данных событий.'),
+								p('Например, вызов ', code('Clarino.form("#myForm", Clarino.html.button({"class":"bt1"}, "Click me"), {".bt1":{click:function(){console.log("clicked");}}})'), ' создаст в контейнере с идентификатором ', code('myForm'), ' кнопку, по клике на которой будет выводиться сообщение в консоль'),
+								test('Form', 'Definitions', function(){
+									Clarino.form("#myForm",
+										Clarino.html.button({"class":"bt1"}, "Click me"),
+										{".bt1":{click:function(){console.log("clicked");}}}
+									);
 								})
 							)
 						})
@@ -1277,8 +1365,19 @@
 									assert(px(22), "22px");
 									assert(px(3, 5, 10), "3px 5px 10px");
 									assert(Clarino.css.unit.px(22), '22px');
-									assert(Clarino.css.unit.pCt(100), '100%');
+									assert(Clarino.css.unit.pct(100), '100%');
 									assert(Clarino.css.unit.px(22, Clarino.css.keywords.auto), '22px auto');
+								}),
+								test('OldUnits', 'Extensions', function(){
+									let $C = Clarino.version('1.5.0');
+									assert($C.css.unit.pc(100), '100%');
+									assert($C.css.unit('xx')(2,3), '2xx 3xx');
+									$C = Clarino.version('1.3.0');
+									assert($C.css.unit.pc(100), '100%');
+									assert($C.css.unit('xx')(2,3), '2xx 3xx');
+									$C = Clarino.version('2.0.0');
+									assert($C.css.unit.pc(100), '100pc');
+									assert($C.css.unit('xx')(2,3), '2xx 3xx');
 								}),
 								(function(){
 									var units = [];
@@ -1286,7 +1385,7 @@
 										units.push(k);
 									}
 									units.sort();
-									var nms = {px:'px', em:'em', pc:'pc', rem:'rem', pCt:'%'};
+									var nms = {px:'px', em:'em', pc:'pc', rem:'rem', pct:'%'};
 									return markup(
 										p('Имеется ряд предопределенных единиц:'),
 										ul(apply(units, function(u){

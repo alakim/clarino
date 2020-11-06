@@ -296,7 +296,7 @@ const Clarino = (function(){
 
 	extend(Css.unit, {
 		px: Css.unit('px'),
-		pCt: Css.unit('%'),
+		pct: Css.unit('%'),
 		pc: Css.unit('pc'),
 		rem: Css.unit('rem'),
 		em: Css.unit('em')
@@ -306,10 +306,81 @@ const Clarino = (function(){
 		const c=str.split(';');
 		const res = {};
 		for(let s of c) res[s] = s.replace(/[A-Z]/g, v=>'-'+v.toLowerCase());
-		return res;
+		return new Proxy(res, {
+			get(o,k){
+				if(!(k in o)) throw `Undefined symbol "${k}"`;
+				return o[k];
+			}
+		});
 	};
 
-	Css.keywords = Clarino.symbols('block;none;flex;row;rowReverse;column;columnReverse;left;right;center;hidden;pointer;italic;bold;normal;uppercase;lowercase;absolute;relative;fixed;underline;auto;collapse;separate;inline;default;solid;dotted;dashed;double;groove;ridge;inset;outset;initial;inherit;wrap;nowrap;wrapReverse;spaceBetween;spaceAround;spaceEvently;flexStart;flexEnd;baseline;stretch');
+	Clarino.enumeration = (s,symbolic=false)=>new Proxy(
+		Object.freeze(s.split(';').reduce((a,e,i)=>(a[e]=symbolic?Symbol():i, a), {})),
+		{get(o,k){
+			if(!(k in o)) throw `Undefined enum value "${k}"`;
+			return o[k];
+		}}
+	);
+
+	Clarino.curry = function(F) {
+		return function curried(...args) {
+			if (args.length >= F.length) {
+				return F.apply(this, args);
+			} else {
+				return function(...tail) {
+					return curried.apply(this, args.concat(tail));
+				}
+			}
+		};
+	}
+
+	Clarino.range = function*(vFrom, vTo, vStep=1){
+		for(let i=vFrom; i<=vTo; i+=vStep) yield i;
+	}
+
+	Clarino.lazy = function(F, timeout=300){
+		let last = 0;
+		let args = [];
+
+		return function(){
+			args = Array.from(arguments);
+			if(last) return;
+
+			function tryStart(){
+				last = new Date().getTime();
+				setTimeout(function(){
+					const now = new Date().getTime();
+					if(now - last < timeout){
+						last = now;
+						tryStart();
+						return;
+					}
+					last = 0;
+					F(...args);
+				}, timeout);
+			}
+
+			tryStart();
+		};
+	}
+
+	Clarino.form = function(container, markup, events){
+		if(typeof(container)==='string') container = document.querySelector(container);
+		if(typeof(markup)!=='string') throw 'Bad markup value: string expected';
+		if(!container) return;
+		container.innerHTML = markup;
+
+		if(!events) return;
+		if(typeof(events)!=='object') throw 'Bad events structure: object expected';
+		for(let sel in events){
+			const elements = container.querySelectorAll(sel),
+				handlers = events[sel];
+			for(let el of elements) for(let evt in handlers)
+				el.addEventListener(evt, handlers[evt]);
+		}
+	};
+
+	Css.keywords = Clarino.symbols('block;none;flex;row;rowReverse;column;columnReverse;left;right;center;top;bottom;hidden;pointer;italic;bold;normal;uppercase;lowercase;absolute;relative;fixed;underline;auto;collapse;separate;inline;inlineBlock;default;solid;dotted;dashed;double;groove;ridge;inset;outset;initial;inherit;wrap;nowrap;wrapReverse;spaceBetween;spaceAround;spaceEvently;flexStart;flexEnd;baseline;stretch');
 
 	Css.template = {
 		border: function(width, color, style){
@@ -346,6 +417,7 @@ const Clarino = (function(){
 		for(let k in interfaces){
 			if(compareVersions(num, k)<=0){
 				const $H = {};
+				// console.log('return %s interface', k);
 				extend($H, interfaces[k]);
 				return $H;
 			}
@@ -353,13 +425,13 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "1.5.1";
+	const topVersion = "2.0.0";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
 	
 	const interfaces = {};
-	interfaces[topVersion] = Clarino;
+	// interfaces[topVersion] = Clarino;
 	
 	const intf = {
 		version: version
@@ -369,9 +441,24 @@ const Clarino = (function(){
 	Clarino.html = Html;
 	Clarino.css = Css;
 	Clarino.simple = compose('markup;apply;repeat;format;formatStyle;entities;decodeEntities;callFunction');
-	//const simpleHtml = compose('html.div');
 	const simpleHtml = compose('html.div;html.a;html.p;html.span;html.nobr;html.hr;html.br;html.img;html.ul;html.ol;html.li;html.table;html.tbody;html.thead;html.tr;html.td;html.th;html.input;html.label;html.textarea;html.pre;html.select;html.option;html.optgroup;html.h1;html.h2;html.h3;html.h4;html.h5;html.h6;html.button;html.form;html.dl;html.dt;html.dd');
 	extend(Clarino.simple, simpleHtml);
-	
+
+	interfaces['1.5.0'] = (function(){
+		const css = {};
+		extend(css, Clarino.css);
+		css.unit = function(nm){
+			return Clarino.css.unit(nm);
+		}
+		extend(css.unit, Clarino.css.unit);
+		css.unit.pc = css.unit.pct;
+
+		const intrf = {};
+		extend(intrf, Clarino);
+		intrf.css = css;
+		return intrf;
+	})();
+	interfaces[topVersion] = Clarino;
+
 	return Clarino;
 })();
