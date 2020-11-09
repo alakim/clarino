@@ -993,20 +993,26 @@
 									assert(obj, {x:3, y:'abc'});
 								})
 							),
-							compose: markup(
+							composeInterface: markup(
 								p('Создает интерфейсный объект из полей и методов Clarino. Используется для создания упрощенных интерфейсов.'),
 								p('Получает массив путей к элементам Clarino, которые должны быть включены в новый объект. Вместо массива можно передавать строку, состоящую из путей, разделенных точкой с запятой.'),
 								p('Пример:'),
 								codesample([
-									'var simple = Clarino.compose("version;apply;html.p.html.div");'
+									'var simple = Clarino.composeInterface("version;apply;html.p.html.div");'
 								]),
 								p('В результате будет получен объект ', code('simple'), ', содержащий методы ', code('version'), ', ', code('apply'), ', ', code('p'), ', и ', code('div'), '.'),
 								test(function(){
-									var obj = $C.compose('version;apply;html.p;html.div');
+									var obj = $C.composeInterface('version;apply;html.p;html.div');
 									assertTrue(obj.version && typeof(obj.version)=='function' && obj.version()==$C.version());
 									assertTrue(obj.apply!=null && typeof(obj.apply)=='function');
 									assertTrue(obj.p && typeof(obj.p)=='function');
 									assertTrue(obj.div && typeof(obj.div)=='function');
+									obj = $C.composeInterface(['version','apply']);
+									assertTrue(obj.version && typeof(obj.version)=='function' && obj.version()==$C.version());
+									assertTrue(obj.apply!=null && typeof(obj.apply)=='function');
+								}),
+								test('OldComposition', 'Settings', function(){
+									const $C = Clarino.version('2.0.0');
 									obj = $C.compose(['version','apply']);
 									assertTrue(obj.version && typeof(obj.version)=='function' && obj.version()==$C.version());
 									assertTrue(obj.apply!=null && typeof(obj.apply)=='function');
@@ -1234,6 +1240,22 @@
 									assert(f(1,2,3), 6)
 								})
 							),
+							compose: markup(
+								p('Формирует функцию, реализующую композицию данных функций. Например, функция ', code('x=>compose(f,g)(x)'), ' эквивалентна функции ', code('x=>f(g(x))'), '.'),
+								test('Compose', 'Definitions', function(){
+									const f = x=>x*2, g = x=>x+3;
+									assert(Clarino.compose(f,g)(4), 14);
+									assert(Clarino.compose(g,f)(4), 11);
+								})
+							),
+							pipe: markup(
+								p('Формирует функцию, реализующую конвейер данных функций. Например, функция ', code('x=>pipe(f,g)(x)'), ' эквивалентна функции ', code('x=>g(f(x))'), '.'),
+								test('pipe', 'Definitions', function(){
+									const f = x=>x*2, g = x=>x+3;
+									assert(Clarino.pipe(f,g)(4), 11);
+									assert(Clarino.pipe(g,f)(4), 14);
+								})
+							),
 							range: markup(
 								p('Возвращает функцию-генератор, создающую массив значений, лежащих в заданном диапазоне.'),
 								p('Метод получает три аргумента:'),
@@ -1251,11 +1273,84 @@
 								p('Модифицирует функцию для придания ей "ленивого" поведения.'),
 								p('Получает функцию, возвращает функцию, вызывающую переданную, но отклонающую вызовы, производимые чаще заданного периода.'),
 								p('Аргументы: '),
-								ul(
+								ol(
 									li(code('F'), ' - модифицируемая функция'),
 									li(code('timeout'), ' - (необязательный) таймаут в миллисекундах, в течение которого повторные вызовы данной функции отклоняются (по умолчанию равен 300)'),
 								),
 								p('Данный метод полезен при создании интерактивных веб-форм, основанных на событийной модели. "Ленивое" поведение обработчиков событий предотвращает неоправданно частое их исполнение (например, повторную перерисовку формы в интервале 200 мсек).')
+							),
+							indexedArray: markup(
+								p('Создает прокси-объект, реализующий функциональность индексируемого массива'),
+								p('Аргументы:'),
+								ol(
+									li(code('data'), ' - исходный массив'),
+									li(code('getID'), ' - функция, возвращающая ID элемента массива, по которому будет происходить индексирование. Значение ID может быть любого типа'),
+								),
+								p('Доступ к элементу массива возможен как по номеру элемента (как в обычном массиве), так и по индексу (как в ассоциативном массиве), для этого используется метод ', code('index(idx)'), '.'),
+								p('При добавлении нового элемента он автоматически индексируется. Если элемент с данным ID уже существует в индексе, выбрасывается исключение.'),
+								p('Дополнительные свойства и методы:'),
+								ul(
+									li(code('index()'), ' - метод, возвращающий элемент с заданным индексом'),
+									li(code('data'), ' - свойство, возвращающее "чистый" массив элементов')
+								),
+								test('Indexed array', 'Definitions', function(){
+									const data = [
+										{code:25, name:'abc'},
+										{code:28, name:'def'},
+										{code:5, name:'ghi'}
+									];
+									const iarr = Clarino.indexedArray(data, x=>x.code);
+									assert(iarr[0].name, 'abc');
+									assert(iarr.index(25).name, 'abc');
+									iarr.push({code:8, name:'xxx'});
+									assert(iarr[3].name, 'xxx');
+									assert(iarr.index(8).name, 'xxx');
+									try{
+										iarr.push({code:8, name:'yyy'});
+									}catch(e){
+										assert(e, 'Item with ID=8 already exists');
+									}
+									assert(iarr.index(8).name, 'xxx');
+									try{
+										iarr.push({name:'zzz'});
+									}catch(e){
+										assert(e, "Item id can't be null");
+									}
+									// assert(JSON.stringify(iarr)=='wwww');
+									assert(iarr.length, 4);
+									assert(iarr.map(x=>x.name).join(';'), 'abc;def;ghi;xxx');
+
+									try{
+										iarr.index();
+									}catch(e){
+										assert(e, "Item id can't be null");
+									}
+
+									assert(iarr.data.length, 4);
+									assert(JSON.stringify(iarr.data), '[{"code":25,"name":"abc"},{"code":28,"name":"def"},{"code":5,"name":"ghi"},{"code":8,"name":"xxx"}]');
+									const x = iarr.pop();
+									assert(x.name, 'xxx');
+									assert(iarr.map(x=>x.name).join(';'), 'abc;def;ghi');
+									assert(iarr.index(8), null);
+
+									iarr.unshift({code:11, name:'www'});
+									assert(iarr.map(x=>x.name).join(';'), 'www;abc;def;ghi');
+									assert(iarr.index(11).name, 'www');
+									
+									assert(Array.from(iarr.keys()), [0,1,2,3]);
+
+									const xx = iarr.shift();
+									assert(xx.name, 'www'),
+									assert(iarr.map(x=>x.name).join(';'), 'abc;def;ghi');
+									assert(iarr.index(11), null);
+
+									const ddd = iarr.splice(1, 1, {code:54, name:'qqq'});
+									assert(ddd[0].name, 'def');
+									assert(iarr.map(x=>x.name).join(';'), 'abc;qqq;ghi');
+									assert(iarr.index(28), null);
+									assert(iarr.index(54).name, 'qqq');
+
+								})
 							),
 							form: markup(
 								p('Конструктор интерактивной формы.'),
@@ -1349,6 +1444,14 @@
 								p('Входные параметры:'),
 								ol(
 									li($C.html.b('id'), ' - идентификатор, присваиваемый блоку CSS-кода (если блок с таким ID уже существует, никаких действий не производится)'),
+									li($C.html.b('styles'), ' - структура, содержащая описание стилей, аналогичная используемым в методах ', code('Clarino.css.stylesheet'), ' и ', code('Clarino.css.writeStylesheet'), '.')
+								)
+							),
+							updateStylesheet: markup(
+								p('Аналогично методу ', code('Clarino.css.addStylesheet'), ' добавляет блок CSS-кода. Если блок с таким ID уже существует, обновляет его содержимое.'),
+								p('Входные параметры:'),
+								ol(
+									li($C.html.b('id'), ' - идентификатор блока CSS-кода (если такой блок уже существует, его содержимое обновляется)'),
 									li($C.html.b('styles'), ' - структура, содержащая описание стилей, аналогичная используемым в методах ', code('Clarino.css.stylesheet'), ' и ', code('Clarino.css.writeStylesheet'), '.')
 								)
 							),

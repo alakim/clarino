@@ -6,7 +6,7 @@ const Clarino = (function(){
 	
 	function extend(o,s){for(let k in s){o[k] = s[k];}}
 
-	function compose(path){
+	function composeInterface(path){
 		if(typeof(path)=='string') path = path.split(';');
 		const res = {};
 		for(let p of path){
@@ -99,11 +99,10 @@ const Clarino = (function(){
 	function emptyValue(v){return !v ||(typeof(v)=="string"&&v.length==0);}
 	
 	extend(Clarino, {
-		extend: extend,
-		compose: compose,
-		repeat: repeat,
-		
-		markup: markup,
+		extend,
+		composeInterface,
+		repeat,
+		markup,
 		
 		json: function(o){
 			if(o==null) return 'null';
@@ -153,7 +152,7 @@ const Clarino = (function(){
 			;
 		},
 		
-		tag: tag,
+		tag,
 		
 		apply: function(coll, F, delim, hideEmpty){
 			const h = [];
@@ -282,6 +281,18 @@ const Clarino = (function(){
 			Clarino.css.stylesheet(styles)
 		);
 	}
+
+	Css.updateStylesheet = function(id, styles){
+		const pnl = document.getElementById(id);
+		if(!pnl){
+			document.getElementsByTagName('head')[0].innerHTML+=Clarino.html.style({id:id},
+				Clarino.css.stylesheet(styles)
+			);
+		}
+		else{
+			pnl.innerHTML = Clarino.css.stylesheet(styles);
+		}
+	}
 	
 	Css.unit = function(name){
 		const format = v=>typeof(v)==='string'?v
@@ -334,6 +345,9 @@ const Clarino = (function(){
 		};
 	}
 
+	Clarino.compose = (...fns)=>fns.reduce((f, g)=>(...args)=>f(g(...args)));
+	Clarino.pipe = (...fns) => (input) => fns.reduce((acc,f)=>f(acc), input);
+
 	Clarino.range = function*(vFrom, vTo, vStep=1){
 		for(let i=vFrom; i<=vTo; i+=vStep) yield i;
 	}
@@ -362,6 +376,57 @@ const Clarino = (function(){
 
 			tryStart();
 		};
+	}
+
+	Clarino.indexedArray = function(data, getID){
+		if(!(data instanceof Array)) throw 'Bad data value. Array expected';
+		if(typeof(getID)!=='function') throw 'Bad getID value. Function exptected';
+
+		const index = new Map();
+		for(let x of data) index.set(getID(x), x);
+
+		return new Proxy(data, {
+			set(o, k, v){
+				const id = getID(v);
+				if(k!=='length'){
+					if(id==null) throw `Item id can't be null`;
+					if(index.has(id)) throw `Item with ID=${id} already exists`;
+					Reflect.set(o, k, v);
+					index.set(id, v);
+				}
+				return true;
+			},
+			get(o,k){
+				if(k==='index') return function(id){
+					if(id==null) throw `Item id can't be null`;
+					return index.get(id);
+				}
+				if(k==='data') return data;
+				if(k==='pop') return function(){
+					const x = data.pop();
+					index.delete(getID(x));
+					return x;
+				}
+				if(k==='shift') return function(){
+					const x = data.shift();
+					index.delete(getID(x));
+					return x;
+				}
+				if(k==='unshift') return function(...args){
+					index.clear();
+					const res = data.unshift(...args);
+					for(let x of data) index.set(getID(x), x);
+					return res;
+				}
+				if(k==='splice') return function(...args){
+					index.clear();
+					const res = data.splice(...args);
+					for(let x of data) index.set(getID(x), x);
+					return res;
+				}
+				return Reflect.get(o, k);
+			}
+		});
 	}
 
 	Clarino.form = function(container, markup, events){
@@ -425,7 +490,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "2.0.0";
+	const topVersion = "2.1.0";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
@@ -434,16 +499,17 @@ const Clarino = (function(){
 	// interfaces[topVersion] = Clarino;
 	
 	const intf = {
-		version: version
+		version
 	};
 	
 	extend(Clarino, intf);
 	Clarino.html = Html;
 	Clarino.css = Css;
-	Clarino.simple = compose('markup;apply;repeat;format;formatStyle;entities;decodeEntities;callFunction');
-	const simpleHtml = compose('html.div;html.a;html.p;html.span;html.nobr;html.hr;html.br;html.img;html.ul;html.ol;html.li;html.table;html.tbody;html.thead;html.tr;html.td;html.th;html.input;html.label;html.textarea;html.pre;html.select;html.option;html.optgroup;html.h1;html.h2;html.h3;html.h4;html.h5;html.h6;html.button;html.form;html.dl;html.dt;html.dd');
+	Clarino.simple = composeInterface('markup;apply;repeat;format;formatStyle;entities;decodeEntities;callFunction');
+	const simpleHtml = composeInterface('html.div;html.a;html.p;html.span;html.nobr;html.hr;html.br;html.img;html.ul;html.ol;html.li;html.table;html.tbody;html.thead;html.tr;html.td;html.th;html.input;html.label;html.textarea;html.pre;html.select;html.option;html.optgroup;html.h1;html.h2;html.h3;html.h4;html.h5;html.h6;html.button;html.form;html.dl;html.dt;html.dd');
 	extend(Clarino.simple, simpleHtml);
 
+	// Backward compatibitity
 	interfaces['1.5.0'] = (function(){
 		const css = {};
 		extend(css, Clarino.css);
@@ -456,6 +522,12 @@ const Clarino = (function(){
 		const intrf = {};
 		extend(intrf, Clarino);
 		intrf.css = css;
+		return intrf;
+	})();
+	interfaces['2.0.0'] = (function(){
+		const intrf = {};
+		extend(intrf, Clarino);
+		intrf.compose = Clarino.composeInterface;
 		return intrf;
 	})();
 	interfaces[topVersion] = Clarino;
