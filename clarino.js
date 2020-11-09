@@ -378,50 +378,81 @@ const Clarino = (function(){
 		};
 	}
 
-	Clarino.indexedArray = function(data, getID){
+	Clarino.indexedArray = function(data, idxDef){
 		if(!(data instanceof Array)) throw 'Bad data value. Array expected';
-		if(typeof(getID)!=='function') throw 'Bad getID value. Function exptected';
+		if(typeof(idxDef)!=='object' && typeof(idxDef)!=='function') throw 'Bad idxDef value. Object or function exptected';
 
-		const index = new Map();
-		for(let x of data) index.set(getID(x), x);
+		if(typeof(idxDef)==='function') idxDef = {id:idxDef};
+
+		// if(typeof(getID)==='object') return;
+		// if(typeof(getID)!=='function') throw 'Bad getID value. Function exptected';
+
+		// const index = new Map();
+
+		const indices = {};
+		for(let k in idxDef){
+			const index = new Map();
+			const getID = idxDef[k];
+			for(let x of data) index.set(getID(x), x);
+			indices[k] = {getID, index};
+		}
+
+		function updateIndices(data){
+			for(let idxID in indices){
+				const idx = indices[idxID];
+				idx.index.clear();
+				for(let x of data) idx.index.set(idx.getID(x), x);
+			}
+		}
+
+		function deleteFromIndices(itm){
+			for(let idxID in indices){
+				const idx = indices[idxID];
+				idx.index.delete(idx.getID(itm));
+			}
+		}
 
 		return new Proxy(data, {
 			set(o, k, v){
-				const id = getID(v);
 				if(k!=='length'){
-					if(id==null) throw `Item id can't be null`;
-					if(index.has(id)) throw `Item with ID=${id} already exists`;
-					Reflect.set(o, k, v);
-					index.set(id, v);
+					for(let idxID in indices){
+						const idx = indices[idxID];
+						const id = idx.getID(v);
+						if(id==null) throw `Item id can't be null`;
+						if(idx.index.has(id)) throw `Item with ID=${id} already exists`;
+						idx.index.set(id, v);
+					}
 				}
+
+				Reflect.set(o, k, v);
 				return true;
 			},
 			get(o,k){
-				if(k==='index') return function(id){
+				if(k==='index') return function(id, idxID='id'){
 					if(id==null) throw `Item id can't be null`;
-					return index.get(id);
+					if(!(idxID in indices)) throw `Undefined index ID: "${idxID}"`;
+					const idx = indices[idxID];
+					return idx.index.get(id);
 				}
 				if(k==='data') return data;
 				if(k==='pop') return function(){
 					const x = data.pop();
-					index.delete(getID(x));
+					deleteFromIndices(x);
 					return x;
 				}
 				if(k==='shift') return function(){
 					const x = data.shift();
-					index.delete(getID(x));
+					deleteFromIndices(x);
 					return x;
 				}
 				if(k==='unshift') return function(...args){
-					index.clear();
 					const res = data.unshift(...args);
-					for(let x of data) index.set(getID(x), x);
+					updateIndices(data);
 					return res;
 				}
 				if(k==='splice') return function(...args){
-					index.clear();
 					const res = data.splice(...args);
-					for(let x of data) index.set(getID(x), x);
+					updateIndices(data);
 					return res;
 				}
 				return Reflect.get(o, k);
@@ -445,7 +476,7 @@ const Clarino = (function(){
 		}
 	};
 
-	Css.keywords = Clarino.symbols('block;none;flex;row;rowReverse;column;columnReverse;left;right;center;top;bottom;hidden;pointer;italic;bold;normal;uppercase;lowercase;absolute;relative;fixed;underline;auto;collapse;separate;inline;inlineBlock;default;solid;dotted;dashed;double;groove;ridge;inset;outset;initial;inherit;wrap;nowrap;wrapReverse;spaceBetween;spaceAround;spaceEvently;flexStart;flexEnd;baseline;stretch');
+	Css.keywords = Clarino.symbols('block;none;flex;row;rowReverse;column;columnReverse;left;right;center;top;bottom;hidden;pointer;italic;bold;normal;uppercase;lowercase;absolute;relative;fixed;underline;auto;collapse;separate;inline;inlineBlock;default;solid;dotted;dashed;double;groove;ridge;inset;outset;cover;contain;unset;initial;inherit;wrap;nowrap;wrapReverse;spaceBetween;spaceAround;spaceEvenly;flexStart;flexEnd;baseline;stretch');
 
 	Css.template = {
 		border: function(width, color, style){
