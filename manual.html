@@ -1390,6 +1390,7 @@
 							stylesheet: markup(
 								a({name:'css_stylesheet'}),
 								p('Формирует фрагмент CSS-кода. Получает JSON-структуру, содержащую описание стилей. Возвращает соответствующий CSS-код.'),
+								p('В качестве аргумента можно передать и просто строку CSS-кода, тогда функция просто возвратит ее.'),
 								p('Пример входной структуры:'),
 								codesample([
 									'"body":{',
@@ -1450,6 +1451,10 @@
 										}
 									});
 									assert(sst, "body{\nfont-family : Verdana ;\nfont-size : 12px ;\n}\nbody p{\nmargin : 0 ;\n}");
+								}),
+								test("Stylesheet sting", 'Extensions', function(){
+									var sst = 'body{color:#fff;}';
+									assert(Clarino.css.stylesheet(sst), sst);
 								})
 							),
 							writeStylesheet: markup('Формирует строку CSS-кода с помощью метода ', code('Clarino.css.stylesheet'), ', и выводит ее в поток загружаемого документа.'),
@@ -1458,7 +1463,7 @@
 								p('Входные параметры:'),
 								ol(
 									li($C.html.b('id'), ' - идентификатор, присваиваемый блоку CSS-кода (если блок с таким ID уже существует, никаких действий не производится)'),
-									li($C.html.b('styles'), ' - структура, содержащая описание стилей, аналогичная используемым в методах ', code('Clarino.css.stylesheet'), ' и ', code('Clarino.css.writeStylesheet'), '.')
+									li($C.html.b('styles'), ' - строка CSS-кода или структура, содержащая описание стилей, аналогичная используемым в методах ', code('Clarino.css.stylesheet'), ' и ', code('Clarino.css.writeStylesheet'), '.')
 								)
 							),
 							updateStylesheet: markup(

@@ -259,6 +259,7 @@ const Clarino = (function(){
 	Css.attributes = {};
 	
 	Css.stylesheet = function(css){
+		if(typeof(css)==='string') return css;
 		const stylesheet = [];
 		each(css, function(defs, sel){
 			writeStyle(defs, sel, stylesheet);
@@ -476,7 +477,7 @@ const Clarino = (function(){
 		}
 	};
 
-	Css.keywords = Clarino.symbols('block;none;flex;row;rowReverse;column;columnReverse;left;right;center;top;bottom;hidden;pointer;italic;bold;normal;uppercase;lowercase;absolute;relative;fixed;underline;auto;collapse;separate;inline;inlineBlock;default;solid;dotted;dashed;double;groove;ridge;inset;outset;cover;contain;unset;initial;inherit;wrap;nowrap;wrapReverse;spaceBetween;spaceAround;spaceEvenly;flexStart;flexEnd;baseline;stretch');
+	Css.keywords = Clarino.symbols('block;none;flex;row;rowReverse;column;columnReverse;left;right;center;top;bottom;hidden;pointer;italic;bold;normal;uppercase;lowercase;absolute;relative;fixed;underline;auto;collapse;separate;inline;inlineBlock;default;solid;dotted;dashed;double;groove;ridge;inset;outset;cover;contain;unset;initial;inherit;wrap;nowrap;wrapReverse;spaceBetween;spaceAround;spaceEvenly;flexStart;flexEnd;baseline;stretch;contentBox;borderBox');
 
 	Css.template = {
 		border: function(width, color, style){
@@ -521,7 +522,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "2.1.0";
+	const topVersion = "2.2.0";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
