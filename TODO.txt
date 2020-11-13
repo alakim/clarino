@@ -1,1 +1,2 @@
+В функцию symbols добавить ключ camelCaseToHyphens (по умолчанию false), который явно задает преобразование camelCase в дефисы
 
