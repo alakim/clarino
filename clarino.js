@@ -314,13 +314,20 @@ const Clarino = (function(){
 		em: Css.unit('em')
 	});
 
-	Clarino.symbols = function(str){
+	Clarino.symbols = function(str, camelCaseToHyphens=false){
 		const c=str.split(';');
 		const res = {};
-		for(let s of c) res[s] = s.replace(/[A-Z]/g, v=>'-'+v.toLowerCase());
+		for(let s of c) res[s] = camelCaseToHyphens?s.replace(/[A-Z]/g, v=>'-'+v.toLowerCase()) :s;
 		return new Proxy(res, {
 			get(o,k){
-				if(!(k in o)) throw `Undefined symbol "${k}"`;
+				if(k=='toString'){
+					return function(){
+						return o.toString();
+					};
+				}
+				else if(!(k in o)){
+					throw `Undefined symbol "${k}"`;
+				}
 				return o[k];
 			}
 		});
@@ -477,7 +484,7 @@ const Clarino = (function(){
 		}
 	};
 
-	Css.keywords = Clarino.symbols('block;none;flex;row;rowReverse;column;columnReverse;left;right;center;top;bottom;hidden;pointer;italic;bold;normal;uppercase;lowercase;absolute;relative;fixed;underline;auto;collapse;separate;inline;inlineBlock;default;solid;dotted;dashed;double;groove;ridge;inset;outset;cover;contain;unset;initial;inherit;wrap;nowrap;wrapReverse;spaceBetween;spaceAround;spaceEvenly;flexStart;flexEnd;baseline;stretch;contentBox;borderBox');
+	Css.keywords = Clarino.symbols('block;none;flex;row;rowReverse;column;columnReverse;left;right;center;top;bottom;hidden;pointer;italic;bold;normal;uppercase;lowercase;absolute;relative;fixed;underline;auto;collapse;separate;inline;inlineBlock;default;solid;dotted;dashed;double;groove;ridge;inset;outset;cover;contain;unset;initial;inherit;wrap;nowrap;wrapReverse;spaceBetween;spaceAround;spaceEvenly;flexStart;flexEnd;baseline;stretch;contentBox;borderBox', true);
 
 	Css.template = {
 		border: function(width, color, style){
@@ -522,7 +529,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "2.2.0";
+	const topVersion = "2.3.0";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
@@ -561,6 +568,15 @@ const Clarino = (function(){
 		extend(intrf, Clarino);
 		intrf.compose = Clarino.composeInterface;
 		return intrf;
+	})();
+	interfaces['2.2.0'] = (function(){
+		const intrf = {};
+		extend(intrf, Clarino);
+		intrf.symbols = function(str){
+			return Clarino.symbols(str, true);
+		};
+		return intrf;
+		
 	})();
 	interfaces[topVersion] = Clarino;
 

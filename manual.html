@@ -1185,11 +1185,21 @@
 							),
 							symbols: markup(
 								p('Создает структуру для хранения строковых констант.'),
-								p('Метод получает строку, содержащую список строковых констант, разделенных точками с запятой. Возвращает объект, имеющий атрибуты, имена и значения которых соответствуют указанным при вызове строковым константам. При этом, если имена символов содежат заглавные буквы, в значениях символов они будут заменены на строчные, и перед ними будет стоять дефис. Имена символов, начинающиеся с заглавной буквы не допускаются.'),
-								p('Например, вызов ', code('Clarino.symbols("abc;def;gHi")'), ' возвратит объект ', code('{abc:"abc", def:"def", gHi:"g-hi"}'), '.'),
+								p('Аргументы:'),
+								ol(
+									li('str - строка, содержащая список строковых констант, разделенных точками с запятой'),
+									li('camelCaseToHyphens - (необязательный), устанавливает преобразование заглавных букв в строчные, предваряя их дефисом (по умолчанию false)')
+								),
+								p('Метод получает строку, содержащую список строковых констант, разделенных точками с запятой. Возвращает объект, имеющий атрибуты, имена и значения которых соответствуют указанным при вызове строковым константам. При этом, если установлен режим camelCaseToHyphens и имена символов содежат заглавные буквы, в значениях символов они будут заменены на строчные, и перед ними будет стоять дефис. При этом имена символов, начинающиеся с заглавной буквы не допускаются.'),
+								p('Например, вызов ', code('Clarino.symbols("abc;def;gHi", true)'), ' возвратит объект ', code('{abc:"abc", def:"def", gHi:"g-hi"}'), '.'),
+								p('Однако, вызов ', code('Clarino.symbols("abc;def;gHi")'), ' возвратит объект ', code('{abc:"abc", def:"def", gHi:"gHi"}'), '.'),
 								test('Symbols', 'Definitions', function(){
-									const ss = Clarino.symbols('abc;def;gHi');
+									const ss = Clarino.symbols('abc;def;gHi', true);
 									assert(ss, {abc:'abc', def:'def', gHi:'g-hi'});
+								}),
+								test('Camel Case Symbols', 'Definitions', function(){
+									const ss = Clarino.symbols('abc;def;gHi');
+									assert(ss, {abc:'abc', def:'def', gHi:'gHi'});
 								}),
 								test('Undefined symbols', 'Definitions', function(){
 									assert(Clarino.css.keywords.bold, 'bold');
@@ -1199,6 +1209,10 @@
 									catch(e){
 										assert(e, 'Undefined symbol "boldx"');
 									}
+								}),
+								test('Old symbols', 'Definitions', function(){
+									const ss = Clarino.version('2.2.0').symbols('abc;def;gHi');
+									assert(ss, {abc:'abc', def:'def', gHi:'g-hi'});
 								})
 							),
 							enumeration: markup(
