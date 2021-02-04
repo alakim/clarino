@@ -1390,11 +1390,25 @@
 								),
 								p('Структура обработчиков событий представляет собой объект, включающий в себя атрибуты двух уровней. Атрибуты первого уровня имеют в качестве имен селекторы элементов формы. Атрибуты второго уровня имеют именами идентификаторы событий, а в качестве их значений передаются функции-обработчики данных событий.'),
 								p('Например, вызов ', code('Clarino.form("#myForm", Clarino.html.button({"class":"bt1"}, "Click me"), {".bt1":{click:function(){console.log("clicked");}}})'), ' создаст в контейнере с идентификатором ', code('myForm'), ' кнопку, по клике на которой будет выводиться сообщение в консоль'),
+								p('В качестве имени атрибута можно вместо имени события указывать оператор ', code('each'), ' а в значение атрибута помещать функцию, обрабатывающую последовательно все элементы, соответствующие данному селектору. Функция получает два аргумента: очередной элемент, и его порядковый номер в коллекции'),
 								test('Form', 'Definitions', function(){
+									$('body').append(Clarino.html.div({id:'myForm', style:'display:none'}));
 									Clarino.form("#myForm",
-										Clarino.html.button({"class":"bt1"}, "Click me"),
-										{".bt1":{click:function(){console.log("clicked");}}}
+										Clarino.html.div(
+											Clarino.html.button({"class":"bt1"}, "Click me"),
+											Clarino.html.span({'class':'s1'})
+										),
+										{
+											'.bt1':{
+												click:function(){console.log("clicked");}
+											},
+											'.s1':{each:function(el,i){
+												el.innerHTML = 'xx';
+											}}
+										}
 									);
+									assert($('#myForm .bt1').length, 1);
+									assert($('#myForm .s1').html(), 'xx');
 								})
 							)
 						})
