@@ -1384,7 +1384,7 @@
 								p('Конструктор интерактивной формы.'),
 								p('Аргументы: '),
 								ul(
-									li(code('container'), ' - контейнерный элемент DOM, в котором будет размещена форма. Задается ссылкой на элемент, или строкой-селектором.'),
+									li(code('container'), ' - контейнерный элемент DOM, в котором будет размещена форма. Задается ссылкой на элемент, или строкой-селектором, также можно передать сюда результат запроса jQuery.'),
 									li(code('markup'), ' - строка, содержащая HTML-разметку формы'),
 									li(code('events'), ' - (необязательный) структура (объект), содержащая обработчики событий, назначаемые элементам формы')
 								),
@@ -1409,6 +1409,15 @@
 									);
 									assert($('#myForm .bt1').length, 1);
 									assert($('#myForm .s1').html(), 'xx');
+								}),
+								test('Form', 'Definitions', function(){
+									const ff = document.getElementById('myForm');
+									Clarino.form(ff, 'fff');
+									assert($('#myForm').html(), 'fff');
+								}),
+								test('Form', 'Definitions', function(){
+									Clarino.form($('#myForm'), 'fxfxfx');
+									assert($('#myForm').html(), 'fxfxfx');
 								})
 							)
 						})

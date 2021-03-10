@@ -470,6 +470,7 @@ const Clarino = (function(){
 
 	Clarino.form = function(container, markup, events){
 		if(typeof(container)==='string') container = document.querySelector(container);
+		else if(container.jquery) container = container[0];
 		if(typeof(markup)!=='string') throw 'Bad markup value: string expected';
 		if(!container) return;
 		container.innerHTML = markup;
@@ -537,7 +538,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "2.4.0";
+	const topVersion = "2.4.1";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
