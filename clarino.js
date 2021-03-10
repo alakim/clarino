@@ -469,10 +469,11 @@ const Clarino = (function(){
 	}
 
 	Clarino.form = function(container, markup, events){
+		if(!container) return;
 		if(typeof(container)==='string') container = document.querySelector(container);
 		else if(container.jquery) container = container[0];
+
 		if(typeof(markup)!=='string') throw 'Bad markup value: string expected';
-		if(!container) return;
 		container.innerHTML = markup;
 
 		if(!events) return;
