@@ -1396,19 +1396,20 @@
 									Clarino.form("#myForm",
 										Clarino.html.div(
 											Clarino.html.button({"class":"bt1"}, "Click me"),
-											Clarino.html.span({'class':'s1'})
+											Clarino.html.span({'class':'s1'}, 'a'),
+											Clarino.html.span({'class':'s1'}, 'a')
 										),
 										{
 											'.bt1':{
 												click:function(){console.log("clicked");}
 											},
 											'.s1':{each:function(el,i){
-												el.innerHTML = 'xx';
+												el.innerHTML = 'xx'+el.innerHTML;
 											}}
 										}
 									);
 									assert($('#myForm .bt1').length, 1);
-									assert($('#myForm .s1').html(), 'xx');
+									assert($('#myForm .s1').html(), 'xxa');
 								}),
 								test('Form', 'Definitions', function(){
 									const ff = document.getElementById('myForm');

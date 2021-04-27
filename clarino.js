@@ -481,13 +481,16 @@ const Clarino = (function(){
 		for(let sel in events){
 			const elements = container.querySelectorAll(sel),
 				handlers = events[sel];
+			let idx = 0;
 			for(let el of elements) for(let evt in handlers){
 				if(evt==='each'){
-					for(let i=0; i<elements.length; i++){
-						const el = elements[i];
-						const F = handlers[evt];
-						F(el, i);
-					}
+					const F = handlers[evt];
+					F(el, idx++);
+					// for(let i=0; i<elements.length; i++){
+					// 	const el = elements[i];
+					// 	const F = handlers[evt];
+					// 	F(el, i);
+					// }
 				}
 				else el.addEventListener(evt, handlers[evt]);
 			}
@@ -539,7 +542,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "2.4.1";
+	const topVersion = "2.4.2";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
