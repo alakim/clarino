@@ -1422,7 +1422,7 @@
 								})
 							),
 							typedFunction: markup(
-								p('Создает функцию с типизованными аргументами. Принимает N аргументов, первые N-1 которых являются определениями типов, последний - функция, реализующая необходимую операцию над перечисленными аргументами.'),
+								p('Создает функцию с типизованными аргументами. Принимает N аргументов, первые N-1 которых являются определениями типов аргументов и, если требуется, возвращаемого значения, последний - функция, реализующая необходимую операцию над перечисленными аргументами.'),
 								p('Определение типа является функцией, принимающей некоторое значение, и возвращающей, если возможно, значение требуемого типа (в противном случае должна выдавать сообщение об ошибке типизации).'),
 								p('Пример использования:'),
 								codesample([
@@ -1431,8 +1431,14 @@
 									'  if(isNaN(nn)) console.error(`${v} must be a number`);',
 									'  return nn;',
 									'}',
-									'const fff = Clarino.typedFunction(NumType, NumType, (x,y)=>x+y);',
-									'fff(2, \'3\'); // returns 5'
+									'const f1 = Clarino.typedFunction(NumType, NumType /* two arg types */, NumType /*return value type */, (x,y)=>x+y);',
+									'f1(2, \'3\'); // returns 5',
+									' ',
+									'const f2 = Clarino.typedFunction(NumType /*return type only*/, ()=>Date.now());',
+									'f2(); // returns current time stamp',
+									' ',
+									'const f3 = Clarino.typedFunction(NumType /*single argument type*/, x=>x**2);',
+									'f3(5); // returns 25'
 								]),
 								p('Если количество аргументов при вызове функции не соответствует заявленному, выдается сообщение об ошибке.'),
 								test('typedFunction', 'Basic', function(){
@@ -1442,12 +1448,22 @@
 									  if(isNaN(nn)) errors.push(`${v} must be a number`);
 									  return nn;
 									}
-									const fff = Clarino.typedFunction(NumType, NumType, (x,y)=>x+y);
+									const fff = Clarino.typedFunction(NumType, NumType, NumType, (x,y)=>x+y);
 									assert(fff(2, '3'), 5);
 									assert(errors.length, 0);
 
 									fff(2, 'x');
-									assert(errors.length, 1);
+									assert(errors.length, 2); // две ошибки - тип второго аргумента и тип возвращаемого значения
+
+									const f2 = Clarino.typedFunction(NumType, NumType, x=>x+':'+x);
+									errors.splice(0);
+									f2(3);
+									assert(errors.length, 1); // ошибка в возвращаемом типе
+
+									const f3 = Clarino.typedFunction(NumType, x=>x**2);
+									errors.splice(0);
+									assert(f3(5), 25);
+									assert(errors.length, 0); 
 								})
 							)
 						})

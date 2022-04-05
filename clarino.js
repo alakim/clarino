@@ -486,22 +486,21 @@ const Clarino = (function(){
 				if(evt==='each'){
 					const F = handlers[evt];
 					F(el, idx++);
-					// for(let i=0; i<elements.length; i++){
-					// 	const el = elements[i];
-					// 	const F = handlers[evt];
-					// 	F(el, i);
-					// }
 				}
 				else el.addEventListener(evt, handlers[evt]);
 			}
 		}
 	};
 
-	Clarino.typedFunction  = function(...argDefs){
+	Clarino.typedFunction  = function(...defs){
+		const fBody = defs[defs.length-1];
+		const argDefs = defs.slice(0, fBody.length);
+		const resDef = defs.length==argDefs.length+1 ? x=>x : defs[argDefs.length];
+
 		return function(...actArgs){
-			if(actArgs.length!=argDefs.length-1) console.error(`${argDefs.length-1} arguments expected`);
+			if(actArgs.length!=argDefs.length) console.error(`${argDefs.length} arguments expected`);
 			const args = actArgs.map((x,i)=>argDefs[i](x));
-			return argDefs[argDefs.length-1](...args);
+			return resDef(fBody(...args));
 		}
 	}
 
@@ -550,7 +549,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "2.5.0";
+	const topVersion = "2.5.1";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
