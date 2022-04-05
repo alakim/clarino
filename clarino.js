@@ -497,6 +497,14 @@ const Clarino = (function(){
 		}
 	};
 
+	Clarino.typedFunction  = function(...argDefs){
+		return function(...actArgs){
+			if(actArgs.length!=argDefs.length-1) console.error(`${argDefs.length-1} arguments expected`);
+			const args = actArgs.map((x,i)=>argDefs[i](x));
+			return argDefs[argDefs.length-1](...args);
+		}
+	}
+
 	Css.keywords = Clarino.symbols('block;none;flex;row;rowReverse;column;columnReverse;left;right;center;top;bottom;hidden;pointer;italic;bold;normal;uppercase;lowercase;absolute;relative;fixed;underline;auto;collapse;separate;inline;inlineBlock;default;solid;dotted;dashed;double;groove;ridge;inset;outset;cover;contain;unset;initial;inherit;wrap;nowrap;wrapReverse;spaceBetween;spaceAround;spaceEvenly;flexStart;flexEnd;baseline;stretch;contentBox;borderBox', true);
 
 	Css.template = {
@@ -542,7 +550,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "2.4.2";
+	const topVersion = "2.5.0";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;

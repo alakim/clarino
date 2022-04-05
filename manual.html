@@ -1420,6 +1420,35 @@
 									Clarino.form($('#myForm'), 'fxfxfx');
 									assert($('#myForm').html(), 'fxfxfx');
 								})
+							),
+							typedFunction: markup(
+								p('Создает функцию с типизованными аргументами. Принимает N аргументов, первые N-1 которых являются определениями типов, последний - функция, реализующая необходимую операцию над перечисленными аргументами.'),
+								p('Определение типа является функцией, принимающей некоторое значение, и возвращающей, если возможно, значение требуемого типа (в противном случае должна выдавать сообщение об ошибке типизации).'),
+								p('Пример использования:'),
+								codesample([
+									'function NumType(v){',
+									'  const nn = Number(v);',
+									'  if(isNaN(nn)) console.error(`${v} must be a number`);',
+									'  return nn;',
+									'}',
+									'const fff = Clarino.typedFunction(NumType, NumType, (x,y)=>x+y);',
+									'fff(2, \'3\'); // returns 5'
+								]),
+								p('Если количество аргументов при вызове функции не соответствует заявленному, выдается сообщение об ошибке.'),
+								test('typedFunction', 'Basic', function(){
+									const errors = [];
+									function NumType(v){
+									  const nn = Number(v);
+									  if(isNaN(nn)) errors.push(`${v} must be a number`);
+									  return nn;
+									}
+									const fff = Clarino.typedFunction(NumType, NumType, (x,y)=>x+y);
+									assert(fff(2, '3'), 5);
+									assert(errors.length, 0);
+
+									fff(2, 'x');
+									assert(errors.length, 1);
+								})
 							)
 						})
 					)),
