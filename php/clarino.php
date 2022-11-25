@@ -48,3 +48,18 @@ function repeat($count, $F){
 
 	return join('', $res);
 }
+
+function defineTag($name){
+	return function(...$args)use($name){
+		return tag($name, ...$args);
+	};
+}
+
+function getTagDefinitions($namelist){
+	$namelist = explode(';', $namelist);
+	$res = [];
+	foreach($namelist as $name){
+		$res[$name] = defineTag($name);
+	}
+	return $res;
+}
