@@ -494,7 +494,7 @@
 							}
 						}),
 						
-						p('При необходимости включения фрагментов верстки по условиям следует использовать условный (тернарный) оператор ', code('condition ? expr1 : expr2'), ' , например:'),
+						p('При необходимости включения фрагментов верстки по условиям следует использовать метод ', code('Clarino.when()'), ', описанный в разделе ', a({href:'#templating'}, 'Шаблонизация'), ', или условный (тернарный) оператор ', code('condition ? expr1 : expr2'), ' , например:'),
 						codesample([
 							'function myNotification(attention){',
 							'	return div(',
@@ -941,6 +941,21 @@
 								),
 								p('Например, ',
 									testSample('Clarino.repeat(4, function(n){return Clarino.html.span(n);}, ";")', '<span>1</span>;<span>2</span>;<span>3</span>;<span>4</span>'), '.'
+								)
+							),
+							when: markup(
+								p('Выводит фрагменты разметки по заданному условию.'),
+								p('Входные параметры: ', code('Clarino.when(condition, markupThen, markupElse)')),
+								ol(
+									li($C.html.b('condition'), ' - условие'),
+									li($C.html.b('markupThen'), ' - фрагмент разметки, выводимый при выполнении условия'),
+									li($C.html.b('markupElse'), ' - (необязательный) фрагмент разметки, выводимый, когда условие не выполняется')
+								),
+								p('Например, ',
+									testSample('Clarino.when(3>1, "YES", "NO")', 'YES'),
+									', или ',
+									testSample('Clarino.when(3>5, "YES", "NO")', 'NO'),
+									'.'
 								)
 							),
 							markup: markup(

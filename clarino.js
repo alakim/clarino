@@ -165,7 +165,10 @@ const Clarino = (function(){
 			});
 			return h.join(delim||"");
 		},
-		
+
+		when: function(cond, markupThen, markupElse=null){
+			return cond?markupThen:markupElse;
+		},
 		
 		formatStyle: function(){
 			function addUnits(nm, val){
@@ -554,7 +557,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "2.6.1";
+	const topVersion = "2.7.1";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
