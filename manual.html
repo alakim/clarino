@@ -278,7 +278,10 @@
 			assert(res, expected);
 
 			return markup(
-				span(' вызов ', code(actionCode), ' вернет строку ', code(expected)),
+				span(' вызов ', code(actionCode),
+					expected===null? ' вернет null'
+						:' вернет строку ', code(expected)
+				),
 				errors.length?span({'class':'error'}, 
 					name, ' ',
 					$C.apply(errors, function(e){return div({'class':'error'}, e)})
@@ -956,6 +959,11 @@
 									', или ',
 									testSample('Clarino.when(3>5, "YES", "NO")', 'NO'),
 									'.'
+								),
+								p('Если требуется выводить значение только при выполнении условия, последний аргумент можно не указывать, например: ',
+									testSample('Clarino.when(3>1, "YES")', 'YES'),
+									', однако ',
+									testSample('Clarino.when(3>5, "YES")', null)
 								)
 							),
 							markup: markup(
