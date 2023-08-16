@@ -252,11 +252,19 @@ const Clarino = (function(){
 				children[nm] = v;
 			}
 		});
-		stylesheet.push("}");
-		
-		each(children, function(cDef, cSel){
-			writeStyle(cDef, sel+cSel, stylesheet);
-		});
+
+		if(sel[0]=='@'){
+			each(children, function(cDef, cSel){
+				writeStyle(cDef, cSel, stylesheet);
+			});
+			stylesheet.push("}");
+		}
+		else{
+			stylesheet.push("}");
+			each(children, function(cDef, cSel){
+				writeStyle(cDef, sel+cSel, stylesheet);
+			});
+		}
 	}
 
 	Css.attributes = {};
@@ -557,7 +565,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "2.7.1";
+	const topVersion = "2.8.1";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
