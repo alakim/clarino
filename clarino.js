@@ -352,9 +352,9 @@ const Clarino = (function(){
 		}}
 	);
 
-	Clarino.expand = (keys, val)=>{
+	Clarino.expand = (keys, val, keyF=x=>x)=>{
 		if(typeof(keys)==='string') keys = keys.split(';');
-		return keys.reduce((a,k)=>((a[k] = typeof(val)==='function'?val(k):val), a), {});
+		return keys.reduce((a,k)=>((a[keyF(k)] = typeof(val)==='function'?val(k):val), a), {});
 	};
 
 	Clarino.curry = function(F) {
@@ -565,7 +565,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "2.8.1";
+	const topVersion = "2.9.1";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
