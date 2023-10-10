@@ -268,6 +268,19 @@ const Clarino = (function(){
 	}
 
 	Css.attributes = {};
+
+	function removeEmptyStyles(cssArray){
+		const res = [];
+		for(let i=0; i<cssArray.length; i++){
+			const ln = cssArray[i];
+			if(ln[ln.length-1]=='{' && cssArray[i+1]=='}'){
+				i++;
+				continue;
+			}
+			res.push(ln);
+		}
+		return res;
+	}
 	
 	Css.stylesheet = function(css){
 		if(typeof(css)==='string') return css;
@@ -275,7 +288,9 @@ const Clarino = (function(){
 		each(css, function(defs, sel){
 			writeStyle(defs, sel, stylesheet);
 		});
-		return stylesheet.join("\n");
+
+		return removeEmptyStyles(stylesheet).join("\n");
+		// return stylesheet.join("\n");
 	}
 	
 	Css.writeStylesheet = function(css){
@@ -311,9 +326,16 @@ const Clarino = (function(){
 			:v instanceof Array? v.join(name+' ')+name
 			:v+name;
 
+		const cache = {};
+
 		return function(v){
-			return arguments.length==1?format(v)
-				:Array.from(arguments).map(a=>format(a)).join(' ');
+			if(arguments.length==1){
+				if(cache[v]) return cache[v];
+				const vv = format(v);
+				cache[v] = vv;
+				return vv;
+			}
+			return Array.from(arguments).map(a=>format(a)).join(' ');
 		}
 	}
 
@@ -565,7 +587,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "2.9.1";
+	const topVersion = "2.9.2";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;

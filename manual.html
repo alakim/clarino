@@ -874,22 +874,53 @@
 							const cssRes = [
 								'@media screen and (min-width: 330px){',
 								'	div{',
-								'		width:50px;}	}'
+									'	width:50px;',
+								'} ',
+								'}'
+							];
+							const srcJson2 = [
+								'"@media screen and (min-width: 330px)":{',
+								'	"div":{',
+								'		" button":{',
+								'			"width":"50px"',
+								'		}',
+								'	}',
+								'}'
+							];
+							const cssRes2 = [
+								'@media screen and (min-width: 330px){',
+								'	div button{',
+								'		width:50px;',
+								'} ',
+								'}'
 							];
 							const jj = '{'+srcJson.join('\n')+'}';
 							const src = JSON.parse(jj);
 							var css = $C.css.stylesheet(src);
+
+							const jj2 = '{'+srcJson2.join('\n')+'}';
+							const src2 = JSON.parse(jj2);
+							var css2 = $C.css.stylesheet(src2);
+							
 							return markup(
 								test(function(){
 									assert(
 										css.replace(/\s+/gi, ' ').replace(/\s+:\s+/gi, ':').replace(/\s+;/gi, ';').replace(/;\s+}/gi, ';}'), 
 										cssRes.join('').replace(/\s+/gi, ' ')
 									);
+									assert(
+										css2.replace(/\s+/gi, ' ').replace(/\s+:\s+/gi, ':').replace(/\s+;/gi, ';').replace(/;\s+}/gi, ';}'), 
+										cssRes2.join('').replace(/\s+/gi, ' ')
+									);
 								}),
 								p('Например, следующее JSON-определение:'),
 								codesample(srcJson.join('\n')),
 								p('будет преобразовано в следующую таблицу стилей:'),
-								codesample(cssRes)
+								codesample(cssRes),
+								p('Или следующее JSON-определение:'),
+								codesample(srcJson2.join('\n')),
+								p('будет преобразовано в следующую таблицу стилей:'),
+								codesample(cssRes2),
 							);
 						})(),
 						p('Для облегчения работы с единицами измерения имеется метод ', a({href:'#clarino_css_unit'}, 'Clarino.css.unit()'), '.'),
