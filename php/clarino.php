@@ -22,7 +22,7 @@ function tag($name, ...$args){
 	$res = join('', $res);
 
 	if(sizeof($attrs)>0){
-		$attrs = join(', ', $attrs);
+		$attrs = join(' ', $attrs);
 		$res = "<{$name} ".$attrs.'>'.$res;
 	}
 	else $res = "<{$name}>".$res;
