@@ -327,21 +327,38 @@ const Clarino = (function(){
 			:v+name;
 
 		const cache = {};
+		const toCache = v=>cache[v] = unit(v);
 
-		return function(v){
+		toCache(0);
+		if(name=='pct' || name=='vw' || name=='vh'){
+			toCache(100);
+			toCache(75);
+			toCache(50);
+			toCache(25);
+		}
+		else if(name=='em' || name=='rem'){
+			toCache(1);
+			toCache(.75);
+			toCache(.5);
+			toCache(.25);
+		}
+
+		function unit(v){
 			if(arguments.length==1){
 				if(cache[v]) return cache[v];
-				const vv = format(v);
-				cache[v] = vv;
-				return vv;
+				// нельзя кэшировать произвольные v - если будет большое число разных v (например, float), получим утечку памяти
+				return format(v);
 			}
 			return Array.from(arguments).map(a=>format(a)).join(' ');
 		}
+		return unit;
 	}
 
 	extend(Css.unit, {
 		px: Css.unit('px'),
 		pct: Css.unit('%'),
+		vw: Css.unit('vw'),
+		vh: Css.unit('vh'),
 		pc: Css.unit('pc'),
 		rem: Css.unit('rem'),
 		em: Css.unit('em')
@@ -587,7 +604,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "2.9.2";
+	const topVersion = "2.9.3";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
