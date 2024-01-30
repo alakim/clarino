@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
 	<title></title>
 	<script src="tools/jquery-3.1.1.min.js"></script>
-	<script src="clarino.min.js"></script>
+	<script src="clarino.js"></script>
 
 	<script>
 	(function($, $C){
@@ -923,6 +923,7 @@
 								codesample(cssRes2),
 							);
 						})(),
+						p('Метод ', code('Clarino.css.stylesheet()'), ', а также подобные ему ', code('Clarino.css.writeStylesheet()'), ' и ', code('Clarino.css.addStylesheet()'), ' вместо одного описания таблицы стилей могут получать произвольное их количество, объединяя их все в одну таблицу.'),
 						p('Для облегчения работы с единицами измерения имеется метод ', a({href:'#clarino_css_unit'}, 'Clarino.css.unit()'), '.'),
 						p('Для уменьшения количества строковых констант при создании CSS-таблиц предлагается к использованию словарь ', code('Clarino.css.keywords'), ', содержащий наиболее употребительные строковые значения свойств CSS.'),
 						comment('Уменьшение количества строковых констант позволяет снизить нагрузку на сборщик мусора'),
@@ -933,8 +934,107 @@
 						),
 						p('Для упрощения формирования таблиц стилей предусмотрен ряд удобных шаблонов, размещенных в разделе ', a({href:'#csstemplates'},'Clarino.css.template'), '.')
 					)),
+					manualSection(3, 'Классы отображения (View Classes)', markup(
+						p('Для улучшения структуры таблиц стилей и отделения структуры модели DOM от отображения страницы предлагается использовать классы отображения (View Classes).'),
+						p('Классы отображения определяются как множество элементов DOM через указание соответствующих селекторов. В класс отображения следует включають DOM-элементы, имеющие схожие стили дизайна (шрифт, цвет, отступы, расположение на странице, и пр.)'),
+						p('Классы отображения противопоставляются классам элементов DOM. Последние имеют семантическое значение, т.е. отображают смысл и взаимосвязь элементов DOM, в то время как класс отображения определяет представление элементов в дизайне страницы.'),
+						test('Basic', 'ViewClasses', function(){
+							const Big = Clarino.css.ViewClass(
+								'div.section',
+								'span.fio'
+							);
+							const Small = Clarino.css.ViewClass(
+								'span.phone'
+							);
+							const Bordered = Clarino.css.ViewClass(
+								Big,
+								Small
+							);
+							const css = Clarino.css.stylesheet({
+								'#main':{
+									...Big.stylesheet({fontSize:'2em'}),
+									...Small.stylesheet({fontSize:'0.2em'}),
+									...Bordered.stylesheet({border:'1px solid red'})
+								}
+							});
+							const std = [
+								'#main div.section{',
+								'font-size : 2em ;',
+								'}',
+								'#main span.fio{',
+								'font-size : 2em ;',
+								'}',
+								'#main span.phone{',
+								'font-size : 0.2em ;',
+								'}',
+								'#main  div.section{',
+								'border : 1px solid red ;',
+								'}',
+								'#main  span.fio{',
+								'border : 1px solid red ;',
+								'}',
+								'#main  span.phone{',
+								'border : 1px solid red ;',
+								'}',
+							].join('\n');
+							// console.log(css); console.log(std);
+							assert(css, std);
+						}),
+						p('Пример использования:'),
+						p('В начале определяем именованные классы отображения с помощью вызова функции <code>Clarino.css.ViewClass()</code>:'),
+						codesample([
+							'const Big = Clarino.css.ViewClass(',
+							'  "div.section",',
+							'  "span.fio"',
+							');',
+							'const Small = Clarino.css.ViewClass(',
+							'  "span.phone"',
+							');'
+						]),
+						p('Функция <code>ViewClass()</code> получает в качестве аргументов любое количество CSS-селекторов, определяющих множество элементов DOM, включаемых в данный класс.'),
+						p('На базе определенных классов отображения можно также создавать производные от них путем их объединения с помощью вызова все той же функции <code>ViewClass()</code>:'),
+						codesample([
+							'const Bordered = Clarino.css.ViewClass(',
+							'  Big,',
+							'  Small',
+							');'
+						]),
+						p('Объект, возвращаемый указанной функцией имеет метод <code>stylesheet()</code>, получающий описание CSS-стилей, точно такое же, как при использовании функции <code>Clarino.css.stylesheet()</code>, и возвращающий объект, готовый для вставки в другое описание стилей. Таким образом формируем таблицу стилей, где определяем оформление элементов данных классов в контексте общего элемента <code>#main</code>:'),
+						codesample([
+							'const css = Clarino.css.stylesheet({',
+							'  "#main":{',
+							'    ...Big.stylesheet({fontSize:"2em"}),',
+							'    ...Small.stylesheet({fontSize:"0.2em"})',
+							'    ...Bordered.stylesheet({border:"1px solid red"})',
+							'  }',
+							'});'
+						]),
+						p('В результате будет сформирована таблица стилей, содержащая следующие правила:'),
+						codesample([
+							'#main div.section{',
+							'  font-size: 2em;',
+							'}',
+							'#main span.fio{',
+							'  font-size: 2em;',
+							'}',
+							'#main span.phone{',
+							'  font-size: 0.2em;',
+							'}',
+							'#main div.section{',
+							'  border: 1px solid red;',
+							'}',
+							'#main span.fio{',
+							'  border: 1px solid red;',
+							'}',
+							'#main span.phone{',
+							'  border: 1px solid red;',
+							'}'
+						]),
+						p('Имеется более подробный пример использования классов отображения: <a href="samples/tidy_css">Tidy CSS</a>')
+					)),
 					manualSection(3, 'Примеры', markup(
 						p('Для иллюстрации основных подходов при работе с библиотекой Clarion представлен пример реализации веб-приложения ', a({href:'samples/phonebook/index.html'}, 'Phonebook'), '. Данное приложение включает в себя макет небольшой базы данных, содержащей телефонный справочник, и имитирующей обращение к ней по Ajax. Приложение реализует простые операции просмотра и редактирования справочника. Поскольку приложение не имеет настоящей базы данных (используется лишь макет, написанный на JavaScript), результаты редактирования не сохраняются, и при перезагрузке веб-страницы они будут потеряны. Приложение использует модальные диалоги, а также переключаемые стили отображения.'),
+						p('Пример ', a({href:'samples/tidy_css'}, 'Tidy CSS'), ' иллюстрирует возможность использования классов отображения (View Classes) для структурирования таблиц стилей.'),
 						p('Другим примером использования библиотеки Clarino является настоящее руководство. Раздел "Справочник" формируется динамически на основе анализа текущей версии библиотеки. В настоящее руководство включены модульные тесты библиотеки, запускаемые при каждой загрузке страницы. Каждый приведенный в данном руководстве пример кода проверяется соответствующим тестом.')
 					))
 				)),
@@ -1635,6 +1735,25 @@
 								test("Stylesheet sting", 'Extensions', function(){
 									var sst = 'body{color:#fff;}';
 									assert(Clarino.css.stylesheet(sst), sst);
+								}),
+								p('Метод может быть вызван также с несколькими аргументами, каждый из которых представляет собой описанное выше определение таблицы стилей. В результате получится таблица, включающая в себя все указанные определения, например, при вызове'),
+								codesample([
+									'Clarino.css.stylesheet(',
+									'  {div:{color:"red"}},',
+									'  {span:{color:"green"}}',
+									');'
+								]),
+								p('Будет сформирована следующая таблица стилей:'),
+								codesample([
+									'div{color: red;}',
+									'span{color: green;}'
+								]),
+								test("MultipleStylesheet", "Extensions", function(){
+									var sst = Clarino.css.stylesheet(
+										{div:{color:'red'}},
+										{span:{color:'green'}}
+									);
+									assert(sst, 'div{\ncolor : red ;\n}\nspan{\ncolor : green ;\n}')
 								})
 							),
 							writeStylesheet: markup('Формирует строку CSS-кода с помощью метода ', code('Clarino.css.stylesheet'), ', и выводит ее в поток загружаемого документа.'),

@@ -282,16 +282,19 @@ const Clarino = (function(){
 		return res;
 	}
 	
-	Css.stylesheet = function(css){
-		if(typeof(css)==='string') return css;
-		const stylesheet = [];
-		each(css, function(defs, sel){
-			writeStyle(defs, sel, stylesheet);
-		});
+	Css.stylesheet = function(...styles){
+		function build(css){
+			if(typeof(css)==='string') return css;
+			const stylesheet = [];
+			each(css, function(defs, sel){
+				writeStyle(defs, sel, stylesheet);
+			});
 
-		return removeEmptyStyles(stylesheet).join("\n");
-		// return stylesheet.join("\n");
-	}
+			return removeEmptyStyles(stylesheet).join("\n");
+			// return stylesheet.join("\n");
+		}
+		return styles.map(build).join('\n');
+	};
 	
 	Css.writeStylesheet = function(css){
 		document.write('<style type="text/css">\n');
@@ -299,13 +302,13 @@ const Clarino = (function(){
 		document.write('\n</style>\n');
 	}
 
-	Css.addStylesheet = function(id, styles){
+	Css.addStylesheet = function(id, ...styles){
 		if(document.getElementById(id)) {
 			console.warn('Stylesheet #%s already exists', id);
 			return;
 		}
 		document.getElementsByTagName('head')[0].innerHTML+=Clarino.html.style({id:id},
-			Clarino.css.stylesheet(styles)
+			Clarino.css.stylesheet(...styles)
 		);
 	}
 
@@ -363,6 +366,33 @@ const Clarino = (function(){
 		rem: Css.unit('rem'),
 		em: Css.unit('em')
 	});
+
+	Css.ViewClass = function(...selectors){
+		const selDict = {};
+		for(let sel of selectors){
+			// console.log('sel: %o', sel);
+			const selCol = typeof(sel)=='object'?sel.selectors
+				:sel.match(/;/)?sel.split(';')
+				:[sel];
+			// console.log('selCol: %o', selCol);
+			for(let ss of selCol){
+				ss = ' '+ss;
+				while(selDict[ss]) ss = ' '+ss;
+				selDict[ss] = true;
+			}
+		}
+		return {
+			selectors: Object.keys(selDict),
+			toString(){
+				return this.selectors.join(',');
+			},
+			stylesheet(defs){
+				return Clarino.expand(this.selectors, defs);
+			}
+		};
+	};
+
+
 
 	Clarino.symbols = function(str, camelCaseToHyphens=false){
 		const c=str.split(';');
@@ -604,7 +634,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "2.9.3";
+	const topVersion = "3.0.0";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
@@ -619,7 +649,7 @@ const Clarino = (function(){
 	extend(Clarino, intf);
 	Clarino.html = Html;
 	Clarino.css = Css;
-	Clarino.simple = composeInterface('markup;apply;repeat;format;formatStyle;entities;decodeEntities;callFunction');
+	Clarino.simple = composeInterface('markup;apply;repeat;where;format;formatStyle;entities;decodeEntities;callFunction');
 	const simpleHtml = composeInterface('html.div;html.a;html.p;html.span;html.nobr;html.hr;html.br;html.img;html.ul;html.ol;html.li;html.table;html.tbody;html.thead;html.tr;html.td;html.th;html.input;html.label;html.textarea;html.pre;html.select;html.option;html.optgroup;html.h1;html.h2;html.h3;html.h4;html.h5;html.h6;html.button;html.form;html.dl;html.dt;html.dd');
 	extend(Clarino.simple, simpleHtml);
 
