@@ -371,7 +371,7 @@ const Clarino = (function(){
 		const selDict = {};
 		for(let sel of selectors){
 			// console.log('sel: %o', sel);
-			const selCol = typeof(sel)=='object'?sel.selectors
+			const selCol = typeof(sel)=='function'?sel.selectors
 				:sel.match(/;/)?sel.split(';')
 				:[sel];
 			// console.log('selCol: %o', selCol);
@@ -381,18 +381,13 @@ const Clarino = (function(){
 				selDict[ss] = true;
 			}
 		}
-		return {
-			selectors: Object.keys(selDict),
-			toString(){
-				return this.selectors.join(',');
-			},
-			stylesheet(defs){
-				return Clarino.expand(this.selectors, defs);
-			}
+
+		const VC = function(defs){
+			return Clarino.expand(Object.keys(selDict), defs);
 		};
+		VC.selectors = Object.keys(selDict);
+		return VC;
 	};
-
-
 
 	Clarino.symbols = function(str, camelCaseToHyphens=false){
 		const c=str.split(';');

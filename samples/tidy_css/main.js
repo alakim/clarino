@@ -63,15 +63,15 @@ VC.Serif = ViewClass(
 // следовательно, она имеет высший приоритет
 $C.css.addStylesheet('MainStyles', {
 	// включаем таблицу стилей для класса отображения
-	...VC.Headers.stylesheet({
+	...VC.Headers({
 		margin: em(size.emGap*4, size.emGap, size.emGap*2)
 	}),
-	...VC.TableHeaders.stylesheet({
+	...VC.TableHeaders({
 		backgroundColor: color.darkViolet,
 		fontWeight: css.bold,
 		justifyContent: 'space-around'
 	}),
-	...VC.Rows.stylesheet({
+	...VC.Rows({
 		padding: em(size.emGap, size.emGap*2),
 		border: border(1, color.gray),
 		justifyContent: 'space-between',
@@ -83,11 +83,11 @@ $C.css.addStylesheet('MainStyles', {
 			borderBottomWidth: em(size.emGap)
 		}
 	}),
-	...VC.Tables.stylesheet({
+	...VC.Tables({
 		width:pct(70)
 	}),
 
-	...VC.Serif.stylesheet({
+	...VC.Serif({
 		fontFamily: 'Antiqua, Times New Roman, Serif'
 	}),
 
@@ -107,17 +107,17 @@ $C.css.addStylesheet('MainMobileStyles', {
 		padding: px(8),
 		margin: px(8),
 		border: border(1, color.gray),
-		...VC.Headers.stylesheet({
+		...VC.Headers({
 			color: color.lightBlue
 		}),
-		...VC.Tables.stylesheet({
+		...VC.Tables({
 			width:pct(100),
 			' h3':{
 				marginTop: em(size.emGap*6),
 				textAlign: css.center
 			}
 		}),
-		...VC.Rows.stylesheet({
+		...VC.Rows({
 			flexDirection: css.column,
 			' span:nth-child(2)':{
 				textAlign: css.right,
@@ -126,7 +126,7 @@ $C.css.addStylesheet('MainMobileStyles', {
 				}
 			}
 		}),
-		...VC.TableHeaders.stylesheet({
+		...VC.TableHeaders({
 			display: css.none
 		})
 	}

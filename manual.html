@@ -952,9 +952,9 @@
 							);
 							const css = Clarino.css.stylesheet({
 								'#main':{
-									...Big.stylesheet({fontSize:'2em'}),
-									...Small.stylesheet({fontSize:'0.2em'}),
-									...Bordered.stylesheet({border:'1px solid red'})
+									...Big({fontSize:'2em'}),
+									...Small({fontSize:'0.2em'}),
+									...Bordered({border:'1px solid red'})
 								}
 							});
 							const std = [
@@ -999,13 +999,13 @@
 							'  Small',
 							');'
 						]),
-						p('Объект, возвращаемый указанной функцией имеет метод <code>stylesheet()</code>, получающий описание CSS-стилей, точно такое же, как при использовании функции <code>Clarino.css.stylesheet()</code>, и возвращающий объект, готовый для вставки в другое описание стилей. Таким образом формируем таблицу стилей, где определяем оформление элементов данных классов в контексте общего элемента <code>#main</code>:'),
+						p('Значение, возвращаемое указанной функцией, представляет собой функцию, получающую описание CSS-стилей, точно такое же, как при использовании функции <code>Clarino.css.stylesheet()</code>, и возвращающую объект, готовый для вставки в другое описание стилей. Таким образом формируем таблицу стилей, где определяем оформление элементов данных классов в контексте общего элемента <code>#main</code>:'),
 						codesample([
 							'const css = Clarino.css.stylesheet({',
 							'  "#main":{',
-							'    ...Big.stylesheet({fontSize:"2em"}),',
-							'    ...Small.stylesheet({fontSize:"0.2em"})',
-							'    ...Bordered.stylesheet({border:"1px solid red"})',
+							'    ...Big({fontSize:"2em"}),',
+							'    ...Small({fontSize:"0.2em"})',
+							'    ...Bordered({border:"1px solid red"})',
 							'  }',
 							'});'
 						]),
