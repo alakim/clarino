@@ -36,5 +36,10 @@ function view(){
 
 
 export default{
-	view
+	view,
+	events:{
+		'.thingsList':{click:ev=>{
+			alert('Thing clicked!');
+		}}
+	}
 };

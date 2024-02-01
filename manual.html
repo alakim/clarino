@@ -950,31 +950,48 @@
 								Big,
 								Small
 							);
+							const Clickable = Clarino.css.ViewClass(
+								'span.fio',
+								'span.phone'
+							);
 							const css = Clarino.css.stylesheet({
 								'#main':{
 									...Big({fontSize:'2em'}),
-									...Small({fontSize:'0.2em'}),
-									...Bordered({border:'1px solid red'})
+									...Small({
+										fontSize:'0.2em',
+										':hover':{color:'blue'}
+									}),
+									...Bordered({border:'1px solid red'}),
+									...Clickable({':hover':{color:'red'}})
 								}
 							});
 							const std = [
-								'#main div.section{',
+								'#main div.section/*vc1*/{',
 								'font-size : 2em ;',
 								'}',
-								'#main span.fio{',
+								'#main span.fio/*vc2*/{',
 								'font-size : 2em ;',
 								'}',
-								'#main span.phone{',
+								'#main span.phone/*vc3*/{',
 								'font-size : 0.2em ;',
 								'}',
-								'#main  div.section{',
+								'#main span.phone/*vc3*/:hover{',
+								'color : blue ;',
+								'}',
+								'#main  div.section/*vc4*/{',
 								'border : 1px solid red ;',
 								'}',
-								'#main  span.fio{',
+								'#main  span.fio/*vc5*/{',
 								'border : 1px solid red ;',
 								'}',
-								'#main  span.phone{',
+								'#main  span.phone/*vc6*/{',
 								'border : 1px solid red ;',
+								'}',
+								'#main span.fio/*vc7*/:hover{',
+								'color : red ;',
+								'}',
+								'#main span.phone/*vc8*/:hover{',
+								'color : red ;',
 								'}',
 							].join('\n');
 							// console.log(css); console.log(std);
@@ -991,7 +1008,7 @@
 							'  "span.phone"',
 							');'
 						]),
-						p('Функция <code>ViewClass()</code> получает в качестве аргументов любое количество CSS-селекторов, определяющих множество элементов DOM, включаемых в данный класс.'),
+						p('Функция <code>ViewClass()</code> получает в качестве аргументов любое количество CSS-селекторов, определяющее множество элементов DOM, включаемых в данный класс.'),
 						p('На базе определенных классов отображения можно также создавать производные от них путем их объединения с помощью вызова все той же функции <code>ViewClass()</code>:'),
 						codesample([
 							'const Bordered = Clarino.css.ViewClass(',
@@ -1004,7 +1021,7 @@
 							'const css = Clarino.css.stylesheet({',
 							'  "#main":{',
 							'    ...Big({fontSize:"2em"}),',
-							'    ...Small({fontSize:"0.2em"})',
+							'    ...Small({fontSize:"0.2em"}),',
 							'    ...Bordered({border:"1px solid red"})',
 							'  }',
 							'});'
@@ -1763,7 +1780,8 @@
 								ol(
 									li($C.html.b('id'), ' - идентификатор, присваиваемый блоку CSS-кода (если блок с таким ID уже существует, никаких действий не производится)'),
 									li($C.html.b('styles'), ' - строка CSS-кода или структура, содержащая описание стилей, аналогичная используемым в методах ', code('Clarino.css.stylesheet'), ' и ', code('Clarino.css.writeStylesheet'), '.')
-								)
+								),
+								p('Для облегчения отладки в самом начале формируемого CSS-кода добавляется комментарий с идентификатором данной таблицы. Этот идентификатор будет виден в разделе "Стили" инструментов разработчика браузеров Google Chrome, Mozilla Firefox, и т.п.'),
 							),
 							updateStylesheet: markup(
 								p('Аналогично методу ', code('Clarino.css.addStylesheet'), ' добавляет блок CSS-кода. Если блок с таким ID уже существует, обновляет его содержимое.'),

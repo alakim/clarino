@@ -47,6 +47,10 @@ const VC = {
 	// Класс отображения табличных заголовков
 	TableHeaders: ViewClass(
 		'.peopleList .titles'
+	),
+	// Класс кликабельных элементов
+	Clickable: ViewClass(
+		'.thingsList .thing'
 	)
 }
 
@@ -62,44 +66,52 @@ VC.Serif = ViewClass(
 // таблицы стилей статически импортируемых модулей,
 // следовательно, она имеет высший приоритет
 $C.css.addStylesheet('MainStyles', {
-	// включаем таблицу стилей для класса отображения
-	...VC.Headers({
-		margin: em(size.emGap*4, size.emGap, size.emGap*2)
-	}),
-	...VC.TableHeaders({
-		backgroundColor: color.darkViolet,
-		fontWeight: css.bold,
-		justifyContent: 'space-around'
-	}),
-	...VC.Rows({
-		padding: em(size.emGap, size.emGap*2),
-		border: border(1, color.gray),
-		justifyContent: 'space-between',
-		color:color.lightBlue,
-		':nth-child(odd)':{
-			backgroundColor: color.darkBlue
-		},
-		':last-child':{
-			borderBottomWidth: em(size.emGap)
+	'#main':{
+		// включаем таблицы стилей для классов отображения
+		...VC.Headers({
+			margin: em(size.emGap*4, size.emGap, size.emGap*2)
+		}),
+		...VC.TableHeaders({
+			backgroundColor: color.darkViolet,
+			fontWeight: css.bold,
+			justifyContent: 'space-around'
+		}),
+		...VC.Rows({
+			padding: em(size.emGap, size.emGap*2),
+			border: border(1, color.gray),
+			justifyContent: 'space-between',
+			color:color.lightBlue,
+			':nth-child(odd)':{
+				backgroundColor: color.darkBlue
+			},
+			':last-child':{
+				borderBottomWidth: em(size.emGap)
+			}
+		}),
+		...VC.Tables({
+			width:pct(70)
+		}),
+
+		...VC.Clickable({
+			cursor:css.pointer,
+			':hover':{
+				color:'#0f0',
+				outline:'1px solid #ff0'
+			}
+		}),
+
+		...VC.Serif({
+			fontFamily: 'Antiqua, Times New Roman, Serif'
+		}),
+
+		// Дополнительная нормализация отображения отдельного элемента
+		' .peopleList h3':{
+			color:color.lightYellow
 		}
-	}),
-	...VC.Tables({
-		width:pct(70)
-	}),
-
-	...VC.Serif({
-		fontFamily: 'Antiqua, Times New Roman, Serif'
-	}),
-
-	// Дополнительная нормализация отображения отдельного элемента
-	'.peopleList h3':{
-		color:color.lightYellow
 	}
 });
 
-// console.log(''+VC.Rows);
-
-// Стили для мобильной версии
+// Стили для имитации мобильной версии
 $C.css.addStylesheet('MainMobileStyles', {
 	'#main.mobile':{
 		backgroundColor: color.black,
@@ -139,6 +151,7 @@ $C.form('#main', markup(
 	People.view(),
 	Things.view()
 ),{
+	...Things.events,
 	'#cbMobile':{change:ev=>{
 		const onMobile = ev.target.checked;
 		document.getElementById('main').classList[onMobile?'add':'remove']('mobile');

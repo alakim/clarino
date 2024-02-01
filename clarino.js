@@ -308,6 +308,7 @@ const Clarino = (function(){
 			return;
 		}
 		document.getElementsByTagName('head')[0].innerHTML+=Clarino.html.style({id:id},
+			'/*'+id+'*/\n',
 			Clarino.css.stylesheet(...styles)
 		);
 	}
@@ -367,8 +368,16 @@ const Clarino = (function(){
 		em: Css.unit('em')
 	});
 
+	const vcID = (function(){
+		let counter = 1;
+		return function(){
+			return counter++;
+		};
+	})();
+
 	Css.ViewClass = function(...selectors){
 		const selDict = {};
+		const reID = /\/\*vc\d+\*\//;
 		for(let sel of selectors){
 			// console.log('sel: %o', sel);
 			const selCol = typeof(sel)=='function'?sel.selectors
@@ -376,9 +385,11 @@ const Clarino = (function(){
 				:[sel];
 			// console.log('selCol: %o', selCol);
 			for(let ss of selCol){
-				ss = ' '+ss;
+				const newID = `/*vc${vcID()}*/`;
+				if(ss.match(reID)) ss = ss.replace(reID, newID);
+				else ss+=newID;
 				while(selDict[ss]) ss = ' '+ss;
-				selDict[ss] = true;
+				selDict[' '+ss] = true;
 			}
 		}
 
