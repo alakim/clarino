@@ -640,7 +640,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "3.0.0";
+	const topVersion = "3.0.1";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
@@ -655,7 +655,7 @@ const Clarino = (function(){
 	extend(Clarino, intf);
 	Clarino.html = Html;
 	Clarino.css = Css;
-	Clarino.simple = composeInterface('markup;apply;repeat;where;format;formatStyle;entities;decodeEntities;callFunction');
+	Clarino.simple = composeInterface('markup;apply;repeat;when;format;formatStyle;entities;decodeEntities;callFunction');
 	const simpleHtml = composeInterface('html.div;html.a;html.p;html.span;html.nobr;html.hr;html.br;html.img;html.ul;html.ol;html.li;html.table;html.tbody;html.thead;html.tr;html.td;html.th;html.input;html.label;html.textarea;html.pre;html.select;html.option;html.optgroup;html.h1;html.h2;html.h3;html.h4;html.h5;html.h6;html.button;html.form;html.dl;html.dt;html.dd');
 	extend(Clarino.simple, simpleHtml);
 
