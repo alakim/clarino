@@ -54,7 +54,9 @@ const Clarino = (function(){
 		
 		h = h.join("");
 		if(h.match(/^\s+$/i)) h = "";
-		if(notEmpty && h.length==0) h = "&nbsp;";
+
+		// *** уже не актуально 
+		// if(notEmpty && h.length==0) h = "&nbsp;";
 		
 		return selfClosing && h.length==0
 			? "<"+name+a.join("")+(Clarino.xhtmlMode? "/>":">")
@@ -640,7 +642,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "3.0.1";
+	const topVersion = "3.0.2";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
