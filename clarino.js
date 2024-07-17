@@ -479,6 +479,53 @@ const Clarino = (function(){
 		};
 	}
 
+	Clarino.cache = (()=>{
+		const defaultConfig = {
+			refreshTimeout:null,
+			transformData:x=>x
+		}
+
+		function Cache(dataProvider, settings={}){
+			const cfg = {...defaultConfig, ...settings};
+			let data = null;
+			let loading = false;
+			let updateTime = 0;
+
+			function load(){
+				if(cfg.refreshTimeout && updateTime<Date.now() - cfg.refreshTimeout) data = null;
+				if(data) return Promise.resolve(data);
+
+				return new Promise(resolve=>{
+					if(loading){
+						let count = 0;
+						function wait(){
+							if(count>500) return;
+							count++;
+							setTimeout(()=>{
+								if(data) resolve(data);
+								else wait();
+							}, 100);
+						}
+						return wait();
+					}
+
+					loading = true;
+					dataProvider().then(res=>{
+						updateTime = Date.now();
+						data = cfg.transformData(res);
+						loading = false;
+						resolve(data);
+					});
+				});
+			}
+
+			load.refresh = ()=>{data = null;};
+			return load;
+		}
+
+		return Cache;
+	})();
+
 	Clarino.indexedArray = function(data, idxDef){
 		if(!(data instanceof Array)) throw 'Bad data value. Array expected';
 		if(typeof(idxDef)!=='object' && typeof(idxDef)!=='function') throw 'Bad idxDef value. Object or function exptected';
@@ -642,7 +689,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "3.0.2";
+	const topVersion = "3.1.0";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;
