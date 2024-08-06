@@ -1,7 +1,7 @@
 const Clarino = (function(){
 	const Html = {}, Css = {};
 	const Clarino = {
-		xhtmlMode: true
+		xhtmlMode: true // для универсального подхода при формировании как HTML, так и XML
 	};
 	
 	function extend(o,s){for(let k in s){o[k] = s[k];}}
@@ -219,9 +219,9 @@ const Clarino = (function(){
 	});
 
 	defineTags("div;a;p;span;nobr;ul;ol;li;i;table;tbody;thead;tr;input;label;textarea;pre;select;option;optgroup;h1;h2;h3;h4;h5;h6;button;form;dl;dt;dd;svg");
-	defineTags('abbr;address;area;article;aside;audio;b;base;bdi;bdo;blockquote;body;canvas;caption;cite;code;col;colgroup;datalist;del;details;dfn;dialog;em;embed;fieldset;figcaption;figure;footer;head;header;html;ins;kbd;keygen;legend;link;main;map;mark;menu;menuitem;meta;meter;nav;noscript;object;output;param;picture;progress;q;rp;rt;ruby;s;samp;script;section;small;source;strong;style;sub;summary;sup;tfoot;time;title;track;u;var;video;wbr');
+	defineTags('abbr;address;area;article;aside;audio;b;base;bdi;bdo;blockquote;body;canvas;caption;cite;code;col;colgroup;datalist;del;details;dfn;dialog;em;embed;fieldset;figcaption;figure;footer;head;header;html;ins;kbd;keygen;legend;link;main;map;mark;menu;menuitem;meta;meter;nav;noscript;object;output;param;picture;progress;q;rp;rt;ruby;s;samp;script;section;small;source;strong;style;sub;summary;sup;tfoot;time;title;track;u;var;video;wbr;iframe');
 	
-	defineSelfClosingTags("img;hr;br;iframe");
+	defineSelfClosingTags("img;hr;br");
 	defineNotEmptyTags("th;td");
 	
 	function writeStyle(defs, sel, stylesheet){
@@ -689,7 +689,7 @@ const Clarino = (function(){
 		console.error("Clarino version "+num+" not supported");
 	}
 	
-	const topVersion = "3.1.0";
+	const topVersion = "3.1.1";
 	
 	// if(typeof(JSUnit)=="object") 
 	Clarino.compareVersions = compareVersions;

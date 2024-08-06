@@ -301,7 +301,7 @@
 					var itm = root[fld];
 					return tr(
 						td(
-							itm?null
+							itm!==null?null
 								:(errorsDetected=true,div({'class':'error'}, 'not defined')), prefix, '.',
 							fld,
 							typeof(itm)=='function'?'()':null
@@ -1090,10 +1090,13 @@
 									test(function(){
 										var f = $C.html[t];
 										assertTrue(typeof(f)=='function' && f('x')=='<'+t+'>x</'+t+'>');
-									})
+									}),
 								);
 							}
 							return tagDefs;
+						}),
+						test(()=>{
+							assert($C.html.iframe({src:'x.html'}), '<iframe src="x.html"></iframe>');
 						})
 					)),
 					manualSection(3, 'Шаблонизация', 'templating', div(
